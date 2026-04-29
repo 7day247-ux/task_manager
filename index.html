@@ -28,7 +28,7 @@
   --shm:0 4px 16px rgba(0,0,0,.08);
   --f:'Noto Sans KR',sans-serif;
 }
-body{font-family:var(--f);background:var(--bg);color:var(--txt);font-size:14px;min-height:100vh;display:flex;}
+body{font-family:var(--f);background:var(--bg);color:var(--txt);font-size:14px;min-height:100vh;display:block;}
 
 /* ══════════════════════════════════════
 LOCK
@@ -47,7 +47,7 @@ LOCK
 /* ══════════════════════════════════════
 SIDEBAR
 ══════════════════════════════════════ */
-.sb{width:var(–sw);min-height:100vh;background:var(–sur);border-right:1px solid var(–brd);display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;}
+.sb{width:var(–sw);min-height:100vh;background:#FFFFFF;border-right:1px solid var(–brd);display:none;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sb.show{display:flex;}
 .sb-top{padding:20px 16px 8px;}
 .sb-brand{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
@@ -70,8 +70,8 @@ SIDEBAR
 /* ══════════════════════════════════════
 MAIN
 ══════════════════════════════════════ */
-.main{margin-left:var(–sw);flex:1;display:none;flex-direction:column;min-height:100vh;}
-.main.show{display:flex;}
+.main{margin-left:var(–sw);display:none;min-height:100vh;}
+.main.show{display:block;}
 .page{display:none;padding:28px 32px;flex:1;}
 .page.on{display:block;}
 .ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
@@ -102,7 +102,7 @@ DASHBOARD
 .donut-w{position:relative;width:90px;height:90px;margin:0 auto 10px;}
 .donut-svg{width:90px;height:90px;transform:rotate(-90deg);}
 .donut-bg{fill:none;stroke:var(–brd);stroke-width:10;}
-.donut-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .8s ease;}
+.donut-fill{fill:none;stroke-width:10;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:220;transition:stroke-dashoffset .8s ease;}
 .donut-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;}
 .dc-desc{font-size:11px;color:var(–txt3);}
 .ds{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
