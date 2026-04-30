@@ -421,11 +421,18 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
     <div class="ph">
       <div><div class="pt">태스크</div><div class="ps">전체 업무 현황</div></div>
     </div>
+    <div class="tb" style="margin-bottom:8px;">
+      <button class="chip on" id="tv-cat" onclick="setTV('cat',this)">카테고리별</button>
+      <button class="chip" id="tv-due" onclick="setTV('due',this)">마감일순</button>
+      <button class="chip" id="tv-req" onclick="setTV('req',this)">요청일순</button>
+      <button class="chip" id="tv-all" onclick="setTV('all',this)">전체 목록</button>
+    </div>
     <div class="tb">
-      <button class="chip on" onclick="setTV('cat',this)">카테고리별</button>
-      <button class="chip" onclick="setTV('due',this)">마감일순</button>
-      <button class="chip" onclick="setTV('req',this)">요청일순</button>
-      <button class="chip" onclick="setTV('all',this)">전체 목록</button>
+      <span style="font-size:12px;color:#9A9590;padding:5px 4px;">상태:</span>
+      <button class="chip on" id="ts-all" onclick="setTS('all',this)">전체</button>
+      <button class="chip" id="ts-inprogress" onclick="setTS('inprogress',this)" style="color:#378ADD;border-color:#BFDBFE;">진행중</button>
+      <button class="chip" id="ts-waiting" onclick="setTS('waiting',this)">대기</button>
+      <button class="chip" id="ts-hold" onclick="setTS('hold',this)" style="color:#EF9F27;border-color:#FDE68A;">홀드</button>
     </div>
     <div id="tasks-wrap"></div>
   </div>
@@ -684,7 +691,7 @@ const MT_T={meeting:{l:'🤝 회의',c:'mt-meeting'},call:{l:'📞 통화',c:'mt
 var tasks=[],meetings=[],mtItems=[],leaves=[];
 var editId=null,csteps=[],ctrVal=0;
 var editMtId=null,mRows=[];
-var tv='cat',calF='all',compF='all';
+var tv='cat',taskStatus='all',calF='all',compF='all';
 var calY,calM,calSel=null;
 var curPage='dashboard';
 
@@ -831,7 +838,34 @@ function doSearch(){
   }
 
   pdfBtn.style.display='inline-flex';
-  var html='';
+  // 상태 필터 버튼
+  var allCnt=tResult.length+mResult.length;
+  var cntIP=tResult.filter(function(t){return t.status==='inprogress';}).length;
+  var cntW=tResult.filter(function(t){return t.status==='waiting';}).length;
+  var cntH=tResult.filter(function(t){return t.status==='hold';}).length;
+  var cntD=tResult.filter(function(t){return t.status==='done';}).length;
+  var filterBar='<div class="tb" style="margin-bottom:16px;" id="sr-filter-bar">'
+    +'<button class="chip on" id="srf-all" data-sf="all">전체 '+allCnt+'</button>'
+    +'<button class="chip" id="srf-ip" data-sf="inprogress" style="color:#378ADD;border-color:#BFDBFE;">진행중 '+cntIP+'</button>'
+    +'<button class="chip" id="srf-w" data-sf="waiting">대기 '+cntW+'</button>'
+    +'<button class="chip" id="srf-h" data-sf="hold" style="color:#EF9F27;border-color:#FDE68A;">홀드 '+cntH+'</button>'
+    +'<button class="chip" id="srf-d" data-sf="done" style="color:#639922;border-color:#BBF7D0;">완료 '+cntD+'</button>'
+    +'<button class="chip" id="srf-m" data-sf="meeting">회의록 '+mResult.length+'</button>'
+    +'</div>';
+
+  // 검색 결과 렌더 후 필터 버튼 이벤트 바인딩
+  setTimeout(function(){
+    var bar=document.getElementById('sr-filter-bar');
+    if(!bar)return;
+    Array.from(bar.querySelectorAll('.chip')).forEach(function(btn){
+      btn.onclick=function(){filterSearch(this.dataset.sf,this);};
+    });
+  },50);
+  res.setAttribute('data-tresult', JSON.stringify(tResult.map(function(t){return t.id;})));
+  res.setAttribute('data-mresult', JSON.stringify(mResult.map(function(i){return i.id;})));
+  res.setAttribute('data-q', q);
+
+  var html=filterBar;
 
   // 태스크 섹션
   if(tResult.length){
@@ -887,6 +921,83 @@ function doSearch(){
   res.innerHTML=html;
 }
 
+function filterSearch(status, el){
+  var res=document.getElementById('search-results');
+  var q=res.getAttribute('data-q')||'';
+  var ql=q.toLowerCase();
+  document.querySelectorAll('#search-results .chip').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+
+  var tResult=tasks.filter(function(t){
+    return t.name.toLowerCase().includes(ql)||(t.note&&t.note.toLowerCase().includes(ql));
+  });
+  var mResult=mtItems.filter(function(item){
+    return(item.title&&item.title.toLowerCase().includes(ql))
+      ||(item.content&&item.content.toLowerCase().includes(ql))
+      ||(item.tags&&item.tags.toLowerCase().includes(ql))
+      ||(item.assignee&&item.assignee.toLowerCase().includes(ql));
+  });
+
+  // 필터 적용
+  var filteredT = status==='all'||status==='meeting' ? tResult : tResult.filter(function(t){return t.status===status;});
+  var filteredM = status==='all'||status==='meeting' ? mResult : [];
+  if(status==='meeting') filteredT=[];
+
+  // 기존 필터 버튼 유지 후 결과만 교체
+  var filterBar=res.querySelector('.tb');
+  var newHtml='';
+
+  if(filteredT.length){
+    newHtml+='<div class="sr-section">';
+    newHtml+='<div class="sr-section-title">✅ 태스크 <span class="sr-count">'+filteredT.length+'건</span></div>';
+    newHtml+=filteredT.map(function(t){
+      var s=ST[t.status],c=CAT[t.cat];
+      var tb=t.ttype==='edit'?'<span class="bdg b-edt">수정</span>':(t.ttype==='variation'?'<span class="bdg b-var">베리</span>':'<span class="bdg b-new">신규</span>');
+      var noteHtml=t.note?'<div class="sr-item-note">'+highlight(t.note,q)+'</div>':'';
+      return'<div class="sr-item" onclick="openEditTask('+t.id+')">'
+        +'<div class="sr-item-top"><div class="sr-item-name">'+highlight(t.name,q)+'</div><span class="bdg '+c.b+'">'+c.l+'</span>'+tb+'</div>'
+        +'<div class="sr-item-meta"><span class="dot" style="background:'+s.c+'"></span><span style="font-size:11px;color:#9A9590;">'+s.l+'</span>'
+        +(t.reqDate?'<span style="font-size:11px;color:#9A9590;">요청 '+fmtD(t.reqDate)+'</span>':'')
+        +(t.dueDate?'<span style="font-size:11px;color:#9A9590;">마감 '+fmtD(t.dueDate)+'</span>':'')
+        +(t.asap?'<span class="asap-t" style="font-size:11px;">ASAP</span>':'')+'</div>'
+        +noteHtml+'</div>';
+    }).join('');
+    newHtml+='</div>';
+  }
+  if(filteredM.length){
+    newHtml+='<div class="sr-section">';
+    newHtml+='<div class="sr-section-title">📝 회의록 &amp; 메모 <span class="sr-count">'+filteredM.length+'건</span></div>';
+    newHtml+=filteredM.map(function(item){
+      var m=meetings.find(function(x){return x.id===item.meeting_id;})||{};
+      var mt=MT_T[m.meet_type]||MT_T.etc;
+      var tgs=item.tags?item.tags.split(',').map(function(t){return t.trim();}).filter(Boolean):[];
+      var tagHtml=tgs.map(function(t){return'<span class="mt-tag">#'+t+'</span>';}).join('');
+      return'<div class="sr-item" onclick="openMeetingsPage()">'
+        +'<div class="sr-item-top"><div class="sr-item-name">'+highlight(item.title||'(제목 없음)',q)+'</div><span class="mt-tb '+mt.c+'">'+mt.l+'</span></div>'
+        +'<div class="sr-item-meta"><span style="font-size:11px;color:#9A9590;">'+(m.meet_date?m.meet_date.replace(/-/g,'.'):'')+'</span>'+(m.meet_title?'<span style="font-size:11px;color:#9A9590;">'+m.meet_title+'</span>':'')+tagHtml+'</div>'
+        +(item.content?'<div class="sr-item-note">'+highlight(item.content,q)+'</div>':'')
+        +'</div>';
+    }).join('');
+    newHtml+='</div>';
+  }
+  if(!filteredT.length&&!filteredM.length){
+    newHtml='<div class="sr-empty">해당 상태의 결과가 없어요</div>';
+  }
+
+  // 필터 버튼 다음 내용만 교체 + 이벤트 재바인딩
+  setTimeout(function(){
+    var bar2=document.getElementById('sr-filter-bar');
+    if(!bar2)return;
+    Array.from(bar2.querySelectorAll('.chip')).forEach(function(btn){
+      btn.onclick=function(){filterSearch(this.dataset.sf,this);};
+    });
+  },50);
+  var children=Array.from(res.children);
+  children.slice(1).forEach(function(c){c.remove();});
+  var tmp=document.createElement('div');
+  tmp.innerHTML=newHtml;
+  Array.from(tmp.children).forEach(function(c){res.appendChild(c);});
+}
 function openMeetingsPage(){goPage('meetings');}
 function highlight(text,q){
   if(!text||!q)return text||'';
@@ -923,10 +1034,19 @@ function printSearchResult(){
   w.document.close();
 }
 
+function setTS(s,el){
+  taskStatus=s;
+  document.querySelectorAll('.tb #ts-all,#ts-inprogress,#ts-waiting,#ts-hold').forEach(function(c){c.classList.remove('on');});
+  el.classList.add('on');
+  renderTasks();
+}
 function setTV(v,el){tv=v;document.querySelectorAll('.tb .chip').forEach(function(c){c.classList.remove('on');});el.classList.add('on');renderTasks();}
 function renderTasks(){
   var wrap=document.getElementById('tasks-wrap');
-  var act=tasks.filter(function(t){return t.status!=='done';});
+  var act=tasks.filter(function(t){
+    if(taskStatus==='all') return t.status!=='done';
+    return t.status===taskStatus;
+  });
   if(tv==='cat'){
     wrap.innerHTML=['pkg','video','project','general'].map(function(cat){
       var ct=act.filter(function(t){return t.cat===cat;});var c=CAT[cat];
