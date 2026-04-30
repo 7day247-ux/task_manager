@@ -519,6 +519,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;" id="pkg-type-filter" style="display:none;">
       <span style="font-size:12px;color:#9A9590;padding:5px 4px;">패키지 형태:</span>
       <button class="chip on" onclick="setCompPT('all',this)">전체</button>
+      <button class="chip" onclick="setCompPT('pkg',this)">패키지</button>
       <button class="chip" onclick="setCompPT('outer',this)">외함</button>
       <button class="chip" onclick="setCompPT('inner',this)">내함</button>
       <button class="chip" onclick="setCompPT('can',this)">캔</button>
@@ -599,6 +600,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
         <label class="fl">패키지 형태</label>
         <select class="fs" id="tf-pkgtype">
           <option value="">선택 안함</option>
+          <option value="pkg">패키지</option>
           <option value="outer">외함</option>
           <option value="inner">내함</option>
           <option value="can">캔</option>
@@ -1079,7 +1081,7 @@ function mkTbl(rows){
     var due=t.asap?'<span class="asap-t">ASAP</span>':t.dueDate?'<span style="font-size:12px;color:#9A9590;">'+fmtD(t.dueDate)+'</span>'+dd:'<span style="color:#9A9590;">—</span>';
     var nt=t.note?t.note.slice(0,28)+(t.note.length>28?'…':''):'';
     var tb=t.ttype==='edit'?'<span class="bdg b-edt">수정</span>':(t.ttype==='variation'?'<span class="bdg b-var">베리</span>':'<span class="bdg b-new">신규</span>');
-    var pkgLabel=t.cat==='pkg'&&t.pkgType?'<span class="bdg b-pkgt" style="font-size:10px;">'+(({'outer':'외함','inner':'내함','can':'캔','container':'용기','label':'라벨','sticker':'덧방스티커','etc':'기타'})[t.pkgType]||t.pkgType)+'</span>':'';
+    var pkgLabel=t.cat==='pkg'&&t.pkgType?'<span class="bdg b-pkgt" style="font-size:10px;">'+(({'pkg':'패키지','outer':'외함','inner':'내함','can':'캔','container':'용기','label':'라벨','sticker':'덧방스티커','etc':'기타'})[t.pkgType]||t.pkgType)+'</span>':'';
     return'<tr class="row" onclick="openEditTask('+t.id+')">'+'<td style="font-weight:500;font-size:13px;">'+t.name+'</td>'+'<td><span class="bdg '+c.b+'">'+c.l+'</span></td>'+'<td>'+tb+pkgLabel+'</td>'+'<td><div class="slbl">'+(cs.length>14?cs.slice(0,14)+'…':cs)+'</div><div class="pbar"><div class="pfill" style="width:'+p+'%;background:'+s.c+'"></div></div></td>'+'<td style="font-size:12px;color:#9A9590;">'+fmtD(t.reqDate)+'</td>'+'<td>'+due+'</td>'+'<td><div style="display:flex;align-items:center;"><span class="dot" style="background:'+s.c+'"></span><span style="font-size:12px;">'+s.l+'</span></div></td>'+'<td style="font-size:11px;color:#9A9590;">'+nt+'</td>'+'</tr>';
   }).join('')+'</tbody></table>';
 }
@@ -1417,6 +1419,7 @@ function onCatCh(){
   document.getElementById('tf-vari').checked=false;
   document.getElementById('tf-pkgtype').value='';
   document.getElementById('tf-pkgtype-wrap').style.display=cat==='pkg'?'block':'none';
+  document.getElementById('tf-pkgtype').value=t.pkgType||'';
   onTypeCh();
 }
 function onTypeCh(){var isEdit=document.getElementById('tf-edit').checked;document.getElementById('tf-ctr-wrap').style.display=isEdit?'block':'none';document.getElementById('tf-cl-wrap').style.display=isEdit?'none':'block';if(!isEdit)renderCSteps();}
