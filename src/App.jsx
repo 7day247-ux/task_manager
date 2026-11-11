@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import LockScreen from './components/LockScreen';
+import { getSession } from './utils/auth';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
 import TaskModal from './components/TaskModal';
@@ -33,7 +34,7 @@ const PAGE_TO_PATH = {
 function AppInner() {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const [authed, setAuthed] = useState(sessionStorage.getItem('auth') === '1');
+  const [authed, setAuthed] = useState(!!getSession());
   const [taskModal, setTaskModal]   = useState(null);
   const [taskFilter, setTaskFilter] = useState(null);
 

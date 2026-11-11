@@ -10,6 +10,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1C1A16;font
 .lock-title{font-size:18px;font-weight:600;margin-bottom:4px;}
 .lock-sub{font-size:12px;color:#9A9590;margin-bottom:1.5rem;}
 .lock-inp{width:100%;border:1.5px solid #D9D4C8;border-radius:10px;padding:11px;font-size:15px;text-align:center;letter-spacing:6px;background:#FAF9F6;color:#1C1A16;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;}
+.lock-inp-email{letter-spacing:normal;}
 .lock-inp:focus{outline:none;border-color:#4A7C6F;}
 .lock-err{font-size:12px;color:#E24B4A;margin-bottom:10px;min-height:18px;}
 .lock-btn{width:100%;background:#4A7C6F;color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}

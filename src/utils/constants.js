@@ -2,8 +2,6 @@ export const SB_URL = 'https://sfypajzdifrwrdlxbcvy.supabase.co';
 export const SB_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmeXBhanpkaWZyd3JkbHhiY3Z5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY4NTUwOTcsImV4cCI6MjA5MjQzMTA5N30.3okK-nRduGFkCmeljgUggxIo-opoM-46SzDfXr3kSfU';
 
-export const PASSWORD = '1234';
-
 export const PKG_STEPS = [
   '요청 접수 및 내용 파악',
   '디자인 작업 시작',
