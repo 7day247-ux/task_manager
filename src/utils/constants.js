@@ -48,6 +48,13 @@ export const CAT = {
   general: { l: '일반',     i: '📋', b: 'b-gen' },
 };
 
+export const EVENT_TYPE = {
+  meeting: { l: '회의', i: '🤝', bg: '#F0EEFB', fg: '#6B5FA0' },
+  outside: { l: '외근', i: '🚗', bg: '#FEF3E2', fg: '#BA7517' },
+  trip:    { l: '출장', i: '🧳', bg: '#E8F5EE', fg: '#2A7A5A' },
+  audit:   { l: '감리', i: '🖨️', bg: '#FDECEC', fg: '#B5403F' },
+};
+
 export const MT_TYPE = {
   meeting: { l: '🤝 회의', c: 'mt-meeting' },
   call:    { l: '📞 통화', c: 'mt-call' },

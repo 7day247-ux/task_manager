@@ -38,9 +38,9 @@ function AppInner() {
   const [taskFilter, setTaskFilter] = useState(null);
 
   const {
-    tasks, meetings, mtItems, leaves,
+    tasks, meetings, mtItems, leaves, events,
     toast, showToast,
-    loadAll, reloadLeaves, reloadMeetings,
+    loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
 
   useEffect(() => {
@@ -94,13 +94,13 @@ function AppInner() {
             <Tasks tasks={tasks} onOpenTask={openTask} filterStatus={taskFilter} />
           } />
           <Route path="/calendar" element={
-            <Calendar tasks={tasks} leaves={leaves} onReloadLeaves={reloadLeaves} showToast={showToast} />
+            <Calendar tasks={tasks} leaves={leaves} events={events} onReloadLeaves={reloadLeaves} onReloadEvents={reloadEvents} showToast={showToast} />
           } />
           <Route path="/meetings" element={
             <MeetingNotes meetings={meetings} mtItems={mtItems} tasks={tasks} onReload={reloadMeetings} showToast={showToast} />
           } />
           <Route path="/completed" element={
-            <CompletedWork tasks={tasks} onOpenTask={openTask} />
+            <CompletedWork tasks={tasks} events={events} onOpenTask={openTask} />
           } />
           <Route path="/reflection" element={
             <Reflection showToast={showToast} />

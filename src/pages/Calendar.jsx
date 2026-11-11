@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { KR_HOLIDAYS } from '../utils/constants';
-import { STATUS, CAT } from '../utils/constants';
+import { STATUS, CAT, EVENT_TYPE } from '../utils/constants';
 import { pad, fmtDate, pct, getDdayInfo, api } from '../utils/helpers';
 import LeaveModal from '../components/LeaveModal';
 
@@ -11,7 +11,7 @@ const FILTER_CHIPS = [
   { id: 'done',       label: '완료',   cls: 'green' },
 ];
 
-export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
+export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, onReloadEvents, showToast }) {
   const now = new Date();
   const [calY, setCalY]   = useState(now.getFullYear());
   const [calM, setCalM]   = useState(now.getMonth());
@@ -19,6 +19,9 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
   const [calF, setCalF]   = useState('all');
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaveInitDate, setLeaveInitDate] = useState('');
+  const [evType, setEvType]   = useState('meeting');
+  const [evTitle, setEvTitle] = useState('');
+  const [evBusy, setEvBusy]   = useState(false);
 
   const todayStr = now.toISOString().slice(0, 10);
 
@@ -46,6 +49,31 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
   const leaveMap = {};
   leaves.forEach(l => { leaveMap[l.leave_date] = (leaveMap[l.leave_date] || 0) + Number(l.amount); });
   const totalLeave = Object.values(leaveMap).reduce((s, v) => s + v, 0);
+
+  const evByDate = {};
+  events.forEach(e => { (evByDate[e.event_date] = evByDate[e.event_date] || []).push(e); });
+  const moKey = calY + '-' + pad(calM + 1);
+  const moCnt = {};
+  events.forEach(e => { if (String(e.event_date).slice(0, 7) === moKey) moCnt[e.event_type] = (moCnt[e.event_type] || 0) + 1; });
+
+  async function addEvent() {
+    if (!calSel || evBusy) return;
+    setEvBusy(true);
+    try {
+      await api('events', { method: 'POST', body: JSON.stringify({ event_date: calSel, event_type: evType, title: evTitle.trim() }) });
+      setEvTitle('');
+      await onReloadEvents();
+    } catch (e) { showToast('일정 저장 실패: ' + e.message, true); }
+    setEvBusy(false);
+  }
+
+  async function delEvent(ev) {
+    if (!confirm('이 일정을 삭제할까요?')) return;
+    try {
+      await api('events?id=eq.' + ev.id, { method: 'DELETE' });
+      await onReloadEvents();
+    } catch (e) { showToast('삭제 실패: ' + e.message, true); }
+  }
 
   const fd = new Date(calY, calM, 1).getDay();
   const dm = new Date(calY, calM + 1, 0).getDate();
@@ -87,7 +115,8 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
     const holiday  = KR_HOLIDAYS[calSel] || null;
     const leaveAmt = leaves.filter(l => l.leave_date === calSel).reduce((s, l) => s + Number(l.amount), 0);
     const shown = filtered.filter(t => t.dueDate === calSel);
-    return { d, days, holiday, leaveAmt, shown };
+    const evs = evByDate[calSel] || [];
+    return { d, days, holiday, leaveAmt, shown, evs };
   })() : null;
 
   return (
@@ -112,6 +141,11 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
             <button className="btn btn-sm" style={{ fontSize: 11 }}
               onClick={() => { setLeaveInitDate(todayStr); setLeaveOpen(true); }}>🏖️ 연차</button>
           </div>
+          <div className="cal-evsum">
+            {Object.entries(EVENT_TYPE).map(([k, m]) => (
+              <span key={k} className="cal-evsum-i" style={{ background: m.bg, color: m.fg }}>{m.l} {moCnt[k] || 0}</span>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -130,6 +164,7 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
             const isToday   = ds === todayStr;
             const isSel     = ds === calSel;
             const ents      = byDate[ds] || [];
+            const evs       = evByDate[ds] || [];
 
             let cls = 'cal-day';
             if (oth)              cls += ' oth';
@@ -143,6 +178,11 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
                 <div className="dn">{dn}</div>
                 {holiday && !oth && <div className="cal-holiday-lbl">{holiday}</div>}
                 {leaveAmt > 0 && !oth && <div className="cal-leave-lbl">연차 {leaveAmt}일</div>}
+                {evs.slice(0, 2).map(e => {
+                  const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
+                  return <div key={'e' + e.id} className="cal-ev" style={{ background: m.bg, color: m.fg }}>{m.l}{e.title ? ' ' + e.title.slice(0, 6) : ''}</div>;
+                })}
+                {evs.length > 2 && <div className="cal-more">+{evs.length - 2}</div>}
                 {(!isWeekend || oth) && ents.slice(0, 2).map((t, ei) => (
                   <div key={ei} className={'cal-ev ' + (t.status === 'done' ? 'done' : t.status)}
                     style={t.status === 'done' ? { opacity: .45 } : {}}>
@@ -181,7 +221,30 @@ export default function Calendar({ tasks, leaves, onReloadLeaves, showToast }) {
                   onClick={() => { setLeaveInitDate(calSel); setLeaveOpen(true); }}>+ 이날 연차 추가</button>
               </div>
             )}
-            {!selData.shown.length && !selData.leaveAmt && (
+            <div className="cal-evbox">
+              <div className="cal-evbox-ttl">일정</div>
+              {selData.evs.map(e => {
+                const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
+                return (
+                  <div key={e.id} className="cal-evrow">
+                    <span className="cal-evtag" style={{ background: m.bg, color: m.fg }}>{m.i} {m.l}</span>
+                    <span className="cal-evname">{e.title || '—'}</span>
+                    <button className="cal-evdel" onClick={() => delEvent(e)}>삭제</button>
+                  </div>
+                );
+              })}
+              <div className="cal-evtypes">
+                {Object.entries(EVENT_TYPE).map(([k, m]) => (
+                  <button key={k} className={'cal-chip' + (evType === k ? ' on' : '')} onClick={() => setEvType(k)}>{m.i} {m.l}</button>
+                ))}
+              </div>
+              <div className="cal-evadd">
+                <input className="cal-evinp" placeholder="내용 (예: 서주우유젤리 감리)" value={evTitle} maxLength={60}
+                  onChange={e => setEvTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addEvent()} />
+                <button className="btn btn-sm btn-p" disabled={evBusy} onClick={addEvent}>추가</button>
+              </div>
+            </div>
+            {!selData.shown.length && !selData.leaveAmt && !selData.evs.length && (
               <div className="cal-det-empty">이 날짜에 해당하는 태스크가 없어요</div>
             )}
             {selData.shown.map(t => {

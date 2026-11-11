@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CAT } from '../utils/constants';
+import { CAT, EVENT_TYPE } from '../utils/constants';
 import { fmtDate } from '../utils/helpers';
 
 const FILTERS = [
@@ -10,7 +10,7 @@ const FILTERS = [
   { id: 'general', label: '일반' },
 ];
 
-export default function CompletedWork({ tasks, onOpenTask }) {
+export default function CompletedWork({ tasks, events = [], onOpenTask }) {
   const done = tasks.filter(t => t.status === 'done');
   const years = [...new Set(done.map(t => t.reqDate ? t.reqDate.slice(0, 4) : new Date().getFullYear() + ''))].sort().reverse();
 
@@ -27,6 +27,9 @@ export default function CompletedWork({ tasks, onOpenTask }) {
   const te     = f.reduce((s, t) => s + (t.ecnt || 0), 0);
   const ae     = edits.length ? Math.round(te / edits.length * 10) / 10 : 0;
   const pkgCnt = f.filter(t => t.cat === 'pkg').length;
+
+  const evCnt = {};
+  events.forEach(e => { if (String(e.event_date).slice(0, 4) === yr) evCnt[e.event_type] = (evCnt[e.event_type] || 0) + 1; });
 
   const mo = Array(12).fill(0);
   f.forEach(t => { const m = t.reqDate ? parseInt(t.reqDate.slice(5, 7)) - 1 : 0; if (m >= 0 && m < 12) mo[m]++; });
@@ -47,6 +50,19 @@ export default function CompletedWork({ tasks, onOpenTask }) {
         <StatCard num={edits.length} label="수정 건수" sub={'신규 ' + (f.length - edits.length) + '건'} />
         <StatCard num={te} label="총 수정 횟수" sub={'평균 ' + ae + '회/건'} />
         <StatCard num={pkgCnt} label="패키지" sub="건수" />
+      </div>
+
+      {/* Activity counts (calendar events) */}
+      <div className="act-sec">
+        <div className="bar-ttl">{yr}년 활동 횟수</div>
+        <div className="act-row">
+          {Object.entries(EVENT_TYPE).map(([k, m]) => (
+            <div key={k} className="act-i">
+              <div className="act-num">{evCnt[k] || 0}</div>
+              <div className="act-lbl">{m.i} {m.l}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Bar chart */}
