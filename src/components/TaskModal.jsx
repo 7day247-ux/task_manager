@@ -184,6 +184,7 @@ export default function TaskModal({ task, tasks, onClose, onSaved, showToast }) 
               <select className="fs" value={form.cat}
                 onChange={e => { set('cat', e.target.value); if (e.target.value === 'project') set('ttype', 'new'); }}>
                 <option value="pkg">📦 패키지 디자인</option>
+                <option value="inhouse">🎨 사내 디자인</option>
                 <option value="project">🗂 프로젝트</option>
                 <option value="general">📋 일반 업무</option>
               </select>

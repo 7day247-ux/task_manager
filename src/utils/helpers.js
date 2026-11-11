@@ -22,7 +22,7 @@ export function getSteps(cat) {
 }
 
 export function isCustomCat(cat) {
-  return cat === 'project' || cat === 'general';
+  return cat === 'inhouse' || cat === 'project' || cat === 'general';
 }
 
 export function pct(task) {
