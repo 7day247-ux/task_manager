@@ -43,9 +43,17 @@ export const STATUS = {
 
 export const CAT = {
   pkg:     { l: '패키지',   i: '📦', b: 'b-pkg' },
-  video:   { l: '영상',     i: '🎬', b: 'b-vid' },
+  inhouse: { l: '사내 디자인', i: '🎨', b: 'b-vid' },
+  posm:    { l: 'POSM',     i: '🪧', b: 'b-posm' },
   project: { l: '프로젝트', i: '🗂', b: 'b-prj' },
   general: { l: '일반',     i: '📋', b: 'b-gen' },
+};
+
+export const EVENT_TYPE = {
+  meeting: { l: '회의', i: '🤝', bg: '#F0EEFB', fg: '#6B5FA0' },
+  outside: { l: '외근', i: '🚗', bg: '#FEF3E2', fg: '#BA7517' },
+  trip:    { l: '출장', i: '🧳', bg: '#E8F5EE', fg: '#2A7A5A' },
+  audit:   { l: '감리', i: '🖨️', bg: '#FDECEC', fg: '#B5403F' },
 };
 
 export const MT_TYPE = {
@@ -60,6 +68,12 @@ export const PKG_LABELS = {
   pkg: '패키지', outer: '외함', inner: '내함', can: '캔',
   container: '용기', label: '라벨', sticker: '덧방스티커', etc: '기타',
 };
+
+export const POSM_LABELS = {
+  wobbler: '와블러', showcard: '쇼카드', poster: '포스터', display: '매대', etc: '기타',
+};
+
+export const TYPE_LABELS = { pkg: PKG_LABELS, posm: POSM_LABELS };
 
 export const KR_HOLIDAYS = {
   '2025-01-01': '신정', '2025-01-28': '설날', '2025-01-29': '설날', '2025-01-30': '설날',

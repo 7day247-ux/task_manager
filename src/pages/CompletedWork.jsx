@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { CAT } from '../utils/constants';
+import { CAT, EVENT_TYPE } from '../utils/constants';
 import { fmtDate } from '../utils/helpers';
 
 const FILTERS = [
   { id: 'all', label: '전체' },
   { id: 'pkg', label: '패키지' },
-  { id: 'video', label: '영상' },
+  { id: 'inhouse', label: '사내 디자인' },
+  { id: 'posm', label: 'POSM' },
   { id: 'project', label: '프로젝트' },
   { id: 'general', label: '일반' },
 ];
 
-export default function CompletedWork({ tasks, onOpenTask }) {
+export default function CompletedWork({ tasks, events = [], onOpenTask }) {
   const done = tasks.filter(t => t.status === 'done');
   const years = [...new Set(done.map(t => t.reqDate ? t.reqDate.slice(0, 4) : new Date().getFullYear() + ''))].sort().reverse();
 
@@ -27,7 +28,9 @@ export default function CompletedWork({ tasks, onOpenTask }) {
   const te     = f.reduce((s, t) => s + (t.ecnt || 0), 0);
   const ae     = edits.length ? Math.round(te / edits.length * 10) / 10 : 0;
   const pkgCnt = f.filter(t => t.cat === 'pkg').length;
-  const vidCnt = f.filter(t => t.cat === 'video').length;
+
+  const evCnt = {};
+  events.forEach(e => { if (String(e.event_date).slice(0, 4) === yr) evCnt[e.event_type] = (evCnt[e.event_type] || 0) + 1; });
 
   const mo = Array(12).fill(0);
   f.forEach(t => { const m = t.reqDate ? parseInt(t.reqDate.slice(5, 7)) - 1 : 0; if (m >= 0 && m < 12) mo[m]++; });
@@ -47,16 +50,19 @@ export default function CompletedWork({ tasks, onOpenTask }) {
         <StatCard num={f.length} label="완료 건수" sub={'총 ' + yr + '년'} />
         <StatCard num={edits.length} label="수정 건수" sub={'신규 ' + (f.length - edits.length) + '건'} />
         <StatCard num={te} label="총 수정 횟수" sub={'평균 ' + ae + '회/건'} />
-        <div className="scard">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <span style={{ fontSize: 22, fontWeight: 700 }}>{pkgCnt}</span>
-            <span style={{ fontSize: 11, color: '#9A9590' }}>패키지</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 22, fontWeight: 700 }}>{vidCnt}</span>
-            <span style={{ fontSize: 11, color: '#9A9590' }}>영상</span>
-          </div>
-          <div className="scard-sub" style={{ marginTop: 6 }}>건수</div>
+        <StatCard num={pkgCnt} label="패키지" sub="건수" />
+      </div>
+
+      {/* Activity counts (calendar events) */}
+      <div className="act-sec">
+        <div className="bar-ttl">{yr}년 활동 횟수</div>
+        <div className="act-row">
+          {Object.entries(EVENT_TYPE).map(([k, m]) => (
+            <div key={k} className="act-i">
+              <div className="act-num">{evCnt[k] || 0}</div>
+              <div className="act-lbl">{m.i} {m.l}</div>
+            </div>
+          ))}
         </div>
       </div>
 

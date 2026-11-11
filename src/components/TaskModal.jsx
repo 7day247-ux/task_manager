@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CAT, PKG_LABELS } from '../utils/constants';
+import { CAT, TYPE_LABELS } from '../utils/constants';
 import { api, getSteps, isCustomCat, toRow } from '../utils/helpers';
 
 const INIT_TASK = {
@@ -7,9 +7,9 @@ const INIT_TASK = {
   status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [],
 };
 
-export default function TaskModal({ task, tasks, onClose, onSaved, showToast }) {
+export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, showToast }) {
   const isEdit = !!task;
-  const [form, setForm]     = useState(INIT_TASK);
+  const [form, setForm]     = useState(() => (!task && defaultCat ? { ...INIT_TASK, cat: defaultCat } : INIT_TASK));
   const [csteps, setCsteps] = useState([]);
   const [ctrVal, setCtrVal] = useState(0);
 
@@ -30,7 +30,7 @@ export default function TaskModal({ task, tasks, onClose, onSaved, showToast }) 
         }));
       }
     } else {
-      setForm({ ...INIT_TASK, reqDate: new Date().toISOString().slice(0, 10) });
+      setForm({ ...INIT_TASK, cat: defaultCat || 'pkg', reqDate: new Date().toISOString().slice(0, 10) });
       setCsteps([]);
       setCtrVal(0);
     }
@@ -182,9 +182,10 @@ export default function TaskModal({ task, tasks, onClose, onSaved, showToast }) 
             <div className="fg">
               <label className="fl">카테고리</label>
               <select className="fs" value={form.cat}
-                onChange={e => { set('cat', e.target.value); if (e.target.value === 'project') set('ttype', 'new'); }}>
+                onChange={e => { set('cat', e.target.value); set('pkgType', ''); if (e.target.value === 'project') set('ttype', 'new'); }}>
                 <option value="pkg">📦 패키지 디자인</option>
-                <option value="video">🎬 영상 디자인</option>
+                <option value="inhouse">🎨 사내 디자인</option>
+                <option value="posm">🪧 POSM</option>
                 <option value="project">🗂 프로젝트</option>
                 <option value="general">📋 일반 업무</option>
               </select>
@@ -213,12 +214,12 @@ export default function TaskModal({ task, tasks, onClose, onSaved, showToast }) 
             </div>
           </div>
 
-          {form.cat === 'pkg' && (
+          {TYPE_LABELS[form.cat] && (
             <div className="fg">
-              <label className="fl">패키지 형태</label>
+              <label className="fl">{form.cat === 'posm' ? 'POSM 종류' : '패키지 형태'}</label>
               <select className="fs" value={form.pkgType} onChange={e => set('pkgType', e.target.value)}>
                 <option value="">선택 안함</option>
-                {Object.entries(PKG_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                {Object.entries(TYPE_LABELS[form.cat]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
           )}

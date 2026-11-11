@@ -204,6 +204,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .b-pkg{background:#F0EEFB;color:#6B5FA0;}
 .b-vid{background:#E8F5EE;color:#2A7A5A;}
 .b-prj{background:#FEF0E6;color:#B85C1A;}
+.b-posm{background:#FDECEC;color:#B5403F;}
 .b-gen{background:#EEF3FB;color:#4A6FA0;}
 .b-new{background:#EEF6FF;color:#1A6BB5;}
 .b-edt{background:#FFF3E8;color:#B85C1A;}
@@ -253,6 +254,22 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .cal-day.has-leave{background:#EEF6FF;}
 .cal-holiday-lbl{font-size:8px;color:#E24B4A;font-weight:600;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cal-leave-lbl{font-size:8px;background:#DDEEFF;color:#185FA5;font-weight:600;padding:1px 4px;border-radius:3px;margin-bottom:1px;}
+.cal-evsum{display:flex;gap:6px;flex-wrap:wrap;width:100%;}
+.cal-evsum-i{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
+.cal-evbox{border:1px solid #E8E4DC;border-radius:10px;padding:12px;margin-bottom:10px;background:#FFFFFF;}
+.cal-evbox-ttl{font-size:12px;font-weight:600;color:#1C1A16;margin-bottom:8px;}
+.cal-evrow{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.cal-evtag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap;}
+.cal-evname{flex:1;font-size:13px;color:#1C1A16;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cal-evdel{font-size:11px;color:#E24B4A;background:none;border:none;cursor:pointer;padding:4px;}
+.cal-evtypes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.cal-evadd{display:flex;gap:6px;}
+.cal-evinp{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:10px;padding:7px 10px;font-size:16px;font-family:'Noto Sans KR',sans-serif;background:#FFFFFF;color:#1C1A16;}
+.act-sec{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.act-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
+.act-i{text-align:center;}
+.act-num{font-size:22px;font-weight:700;color:#1C1A16;}
+.act-lbl{font-size:11px;color:#9A9590;margin-top:2px;white-space:nowrap;}
 .cal-det{margin-top:14px;background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .cal-det-ttl{font-size:13px;font-weight:600;margin-bottom:12px;color:#1C1A16;}
 .cal-det-empty{font-size:12px;color:#9A9590;text-align:center;padding:1.5rem 0;}
@@ -369,7 +386,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   /* 사이드바 숨기고 탭바 표시 */
   .sb{display:none!important;}
   .main{margin-left:0;padding-bottom:70px;}
-  .page{padding:16px 14px;}
+  .page{padding:22px 18px;}
 
   /* 모바일 탭바 */
   .mobile-tabbar{
@@ -390,11 +407,14 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   }
   .mobile-tab.on{color:#4A7C6F;}
   .mobile-tab-icon{font-size:20px;line-height:1;}
-  .mobile-tab-label{font-size:10px;font-weight:500;}
+  .mobile-tab-label{font-size:10px;font-weight:500;white-space:nowrap;letter-spacing:-.3px;}
 
   /* 페이지 헤더 */
-  .ph{margin-bottom:16px;gap:8px;}
+  .ph{margin-bottom:20px;gap:8px;}
   .pt{font-size:18px;}
+  .tb{margin-bottom:20px;gap:8px;}
+  .tcat{margin-bottom:32px;}
+  .tcat-hd{margin-bottom:14px;}
 
   /* 대시보드 */
   .dc{grid-template-columns:1fr;}
@@ -403,8 +423,10 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 
   /* 태스크 — 카드뷰 전환 */
   .task-table-wrap{display:none;}
-  .task-cards-wrap{display:block;}
-  .ttbl{border-radius:0;border-left:none;border-right:none;}
+  .task-cards-wrap{display:block;padding:12px;}
+  .task-card{padding:16px;margin-bottom:12px;}
+  .task-card-top{margin-bottom:10px;}
+  .task-card-step{margin-bottom:10px;}
 
   /* 캘린더 */
   .cal-day{min-height:58px;padding:4px 3px;}
