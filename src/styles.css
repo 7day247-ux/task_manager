@@ -369,7 +369,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   /* 사이드바 숨기고 탭바 표시 */
   .sb{display:none!important;}
   .main{margin-left:0;padding-bottom:70px;}
-  .page{padding:16px 14px;}
+  .page{padding:22px 18px;}
 
   /* 모바일 탭바 */
   .mobile-tabbar{
@@ -390,11 +390,14 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   }
   .mobile-tab.on{color:#4A7C6F;}
   .mobile-tab-icon{font-size:20px;line-height:1;}
-  .mobile-tab-label{font-size:10px;font-weight:500;}
+  .mobile-tab-label{font-size:10px;font-weight:500;white-space:nowrap;letter-spacing:-.3px;}
 
   /* 페이지 헤더 */
-  .ph{margin-bottom:16px;gap:8px;}
+  .ph{margin-bottom:20px;gap:8px;}
   .pt{font-size:18px;}
+  .tb{margin-bottom:20px;gap:8px;}
+  .tcat{margin-bottom:32px;}
+  .tcat-hd{margin-bottom:14px;}
 
   /* 대시보드 */
   .dc{grid-template-columns:1fr;}
@@ -403,8 +406,10 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 
   /* 태스크 — 카드뷰 전환 */
   .task-table-wrap{display:none;}
-  .task-cards-wrap{display:block;}
-  .ttbl{border-radius:0;border-left:none;border-right:none;}
+  .task-cards-wrap{display:block;padding:12px;}
+  .task-card{padding:16px;margin-bottom:12px;}
+  .task-card-top{margin-bottom:10px;}
+  .task-card-step{margin-bottom:10px;}
 
   /* 캘린더 */
   .cal-day{min-height:58px;padding:4px 3px;}

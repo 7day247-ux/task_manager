@@ -43,7 +43,6 @@ export const STATUS = {
 
 export const CAT = {
   pkg:     { l: '패키지',   i: '📦', b: 'b-pkg' },
-  video:   { l: '영상',     i: '🎬', b: 'b-vid' },
   project: { l: '프로젝트', i: '🗂', b: 'b-prj' },
   general: { l: '일반',     i: '📋', b: 'b-gen' },
 };
