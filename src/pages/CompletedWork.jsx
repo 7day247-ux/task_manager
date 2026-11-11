@@ -6,6 +6,7 @@ const FILTERS = [
   { id: 'all', label: '전체' },
   { id: 'pkg', label: '패키지' },
   { id: 'inhouse', label: '사내 디자인' },
+  { id: 'posm', label: 'POSM' },
   { id: 'project', label: '프로젝트' },
   { id: 'general', label: '일반' },
 ];

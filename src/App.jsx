@@ -113,6 +113,7 @@ function AppInner() {
       {taskModal !== null && (
         <TaskModal
           task={taskModal.task}
+          defaultCat={taskModal.defaultCat}
           tasks={tasks}
           onClose={() => setTaskModal(null)}
           onSaved={async () => { await loadAll(); }}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { STATUS, CAT, PKG_LABELS } from '../utils/constants';
+import { STATUS, CAT, TYPE_LABELS } from '../utils/constants';
 import { fmtDate, pct, curStep, getDdayInfo } from '../utils/helpers';
 
 function TaskCard({ t, onRowClick }) {
@@ -13,8 +13,8 @@ function TaskCard({ t, onRowClick }) {
     : t.ttype === 'variation'
       ? <span className="bdg b-var">베리</span>
       : <span className="bdg b-new">신규</span>;
-  const pkgLabel = t.cat === 'pkg' && t.pkgType
-    ? <span className="bdg b-pkgt">{PKG_LABELS[t.pkgType] || t.pkgType}</span>
+  const pkgLabel = TYPE_LABELS[t.cat] && t.pkgType
+    ? <span className="bdg b-pkgt">{TYPE_LABELS[t.cat][t.pkgType] || t.pkgType}</span>
     : null;
 
   return (
@@ -97,8 +97,8 @@ export default function TaskTable({ rows, onRowClick }) {
                 : t.ttype === 'variation'
                   ? <span className="bdg b-var">베리</span>
                   : <span className="bdg b-new">신규</span>;
-              const pkgLabel = t.cat === 'pkg' && t.pkgType
-                ? <span className="bdg b-pkgt" style={{ fontSize: 10 }}>{PKG_LABELS[t.pkgType] || t.pkgType}</span>
+              const pkgLabel = TYPE_LABELS[t.cat] && t.pkgType
+                ? <span className="bdg b-pkgt" style={{ fontSize: 10 }}>{TYPE_LABELS[t.cat][t.pkgType] || t.pkgType}</span>
                 : null;
               const dueCell = t.asap
                 ? <span className="asap-t">ASAP</span>
