@@ -7,7 +7,8 @@ import ReflectionModal from '../components/ReflectionModal';
 const SESSION_KEY = 'rf_auth';
 
 export default function Reflection({ showToast }) {
-  const [unlocked, setUnlocked] = useState(sessionStorage.getItem(SESSION_KEY) === '1');
+  // 탭에 들어올 때마다 잠금 상태로 시작한다 (잠금 해제를 저장하지 않음)
+  const [unlocked, setUnlocked] = useState(false);
   const [entries, setEntries]   = useState([]);
   const [modal, setModal]       = useState(undefined); // undefined=닫힘, null=새글, obj=수정
   const [filterMood, setFilterMood] = useState('all');
@@ -25,8 +26,17 @@ export default function Reflection({ showToast }) {
     if (unlocked) load();
   }, [unlocked, load]);
 
+  // 예전 버전이 남긴 해제 기록 제거 + 앱이 화면에서 사라지면 다시 잠금
+  useEffect(() => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* 저장소 사용 불가 시 무시 */ }
+    const relock = () => {
+      if (document.hidden) { setUnlocked(false); setEntries([]); setModal(undefined); }
+    };
+    document.addEventListener('visibilitychange', relock);
+    return () => document.removeEventListener('visibilitychange', relock);
+  }, []);
+
   function unlock() {
-    sessionStorage.setItem(SESSION_KEY, '1');
     setUnlocked(true);
   }
 
