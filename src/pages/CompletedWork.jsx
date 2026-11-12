@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CAT, EVENT_TYPE } from '../utils/constants';
-import { fmtDate } from '../utils/helpers';
+import { fmtDate, leadDays, fmtLead } from '../utils/helpers';
 
 const FILTERS = [
   { id: 'all', label: '전체' },
@@ -11,29 +11,46 @@ const FILTERS = [
   { id: 'general', label: '일반' },
 ];
 
+const TTYPE = { new: ['신규', 'b-new'], edit: ['수정', 'b-edt'], variation: ['베리에이션', 'b-new'] };
+const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length * 10) / 10 : null;
+const fmtAvg = v => v === null ? '—' : v === 0 ? '당일' : v + '일';
+
 export default function CompletedWork({ tasks, events = [], onOpenTask }) {
   const done = tasks.filter(t => t.status === 'done');
-  const years = [...new Set(done.map(t => t.reqDate ? t.reqDate.slice(0, 4) : new Date().getFullYear() + ''))].sort().reverse();
+  // 완료일 기준으로 연도·월을 나눈다. 완료일이 없는 예전 기록은 요청일로 대신한다.
+  const baseDate = t => t.doneDate || t.reqDate || '';
+  const thisYear = new Date().getFullYear() + '';
+  const years = [...new Set(done.map(t => baseDate(t).slice(0, 4) || thisYear))].sort().reverse();
 
-  const [yr, setYr]       = useState(years[0] || new Date().getFullYear() + '');
+  const [yr, setYr]       = useState(years[0] || thisYear);
   const [compF, setCompF] = useState('all');
 
-  const f = done.filter(t => {
-    const y = t.reqDate ? t.reqDate.slice(0, 4) : new Date().getFullYear() + '';
-    if (y !== yr) return false;
-    return compF === 'all' || t.cat === compF;
-  });
+  const inYear = done.filter(t => (baseDate(t).slice(0, 4) || thisYear) === yr);
+  const f = inYear
+    .filter(t => compF === 'all' || t.cat === compF)
+    .sort((a, b) => baseDate(b).localeCompare(baseDate(a)));
 
-  const edits  = f.filter(t => t.ttype === 'edit');
-  const te     = f.reduce((s, t) => s + (t.ecnt || 0), 0);
-  const ae     = edits.length ? Math.round(te / edits.length * 10) / 10 : 0;
-  const pkgCnt = f.filter(t => t.cat === 'pkg').length;
+  const leads     = f.map(leadDays).filter(v => v !== null);
+  const asapTasks = f.filter(t => t.asap);
+  const asapLeads = asapTasks.map(leadDays).filter(v => v !== null);
+  const normLeads = f.filter(t => !t.asap).map(leadDays).filter(v => v !== null);
+  const totalEdits = f.reduce((s, t) => s + (t.ecnt || 0), 0);
+  const avgEdits   = f.length ? Math.round(totalEdits / f.length * 10) / 10 : 0;
+  const editTasks  = f.filter(t => t.ttype === 'edit').length;
+
+  // 유형별 요약 (연도 전체 기준, 필터와 무관)
+  const byCat = Object.keys(CAT).map(k => {
+    const list = inYear.filter(t => t.cat === k);
+    const l = list.map(leadDays).filter(v => v !== null);
+    return { k, n: list.length, lead: avg(l), edits: list.length ? Math.round(list.reduce((s, t) => s + (t.ecnt || 0), 0) / list.length * 10) / 10 : 0 };
+  }).filter(r => r.n > 0);
+  const maxLead = Math.max(1, ...byCat.map(r => r.lead || 0));
 
   const evCnt = {};
   events.forEach(e => { if (String(e.event_date).slice(0, 4) === yr) evCnt[e.event_type] = (evCnt[e.event_type] || 0) + 1; });
 
   const mo = Array(12).fill(0);
-  f.forEach(t => { const m = t.reqDate ? parseInt(t.reqDate.slice(5, 7)) - 1 : 0; if (m >= 0 && m < 12) mo[m]++; });
+  f.forEach(t => { const m = parseInt(baseDate(t).slice(5, 7)) - 1; if (m >= 0 && m < 12) mo[m]++; });
   const mx = Math.max(...mo) || 1;
 
   return (
@@ -47,11 +64,34 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
 
       {/* Summary Cards */}
       <div className="sg">
-        <StatCard num={f.length} label="완료 건수" sub={'총 ' + yr + '년'} />
-        <StatCard num={edits.length} label="수정 건수" sub={'신규 ' + (f.length - edits.length) + '건'} />
-        <StatCard num={te} label="총 수정 횟수" sub={'평균 ' + ae + '회/건'} />
-        <StatCard num={pkgCnt} label="패키지" sub="건수" />
+        <StatCard num={f.length} label="완료 건수" sub={'신규 ' + (f.length - editTasks) + ' · 수정 ' + editTasks} />
+        <StatCard num={fmtAvg(avg(leads))} label="평균 리드타임" sub="요청일 → 완료일" />
+        <StatCard num={fmtAvg(avg(asapLeads))} label="ASAP 평균 리드타임" sub={'ASAP ' + asapTasks.length + '건 · 일반 ' + fmtAvg(avg(normLeads))} />
+        <StatCard num={avgEdits + '회'} label="평균 수정 횟수" sub={'총 ' + totalEdits + '회'} />
       </div>
+
+      {/* Lead time by category */}
+      {byCat.length > 0 && (
+        <div className="bar-sec">
+          <div className="bar-ttl">유형별 리드타임</div>
+          <div className="lt-tbl">
+            <div className="lt-row lt-hd">
+              <span>유형</span><span>건수</span><span>평균 리드타임</span><span>평균 수정</span>
+            </div>
+            {byCat.map(r => (
+              <div key={r.k} className="lt-row">
+                <span className="lt-cat">{CAT[r.k].i} {CAT[r.k].l}</span>
+                <span>{r.n}건</span>
+                <span className="lt-lead">
+                  <span className="lt-bar"><span style={{ width: Math.round((r.lead || 0) / maxLead * 100) + '%' }} /></span>
+                  <b>{fmtAvg(r.lead)}</b>
+                </span>
+                <span>{r.edits}회</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Activity counts (calendar events) */}
       <div className="act-sec">
@@ -84,7 +124,7 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
         <select className="fs" value={yr} onChange={e => setYr(e.target.value)}
           style={{ width: 'auto', padding: '5px 10px', fontSize: 12, borderRadius: 20 }}>
-          {years.length ? years.map(y => <option key={y} value={y}>{y}년</option>) : <option>{new Date().getFullYear()}년</option>}
+          {years.length ? years.map(y => <option key={y} value={y}>{y}년</option>) : <option>{thisYear}년</option>}
         </select>
         {FILTERS.map(flt => (
           <button key={flt.id} className={'chip' + (compF === flt.id ? ' on' : '')} onClick={() => setCompF(flt.id)}>
@@ -93,40 +133,67 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
         ))}
       </div>
 
-      {/* Table */}
-      <div className="ttbl">
+      {/* Table (desktop) */}
+      <div className="ttbl cw-table">
         <table>
           <thead>
             <tr>
-              <th style={{ width: '28%' }}>프로젝트명</th>
-              <th style={{ width: '9%' }}>유형</th>
+              <th style={{ width: '27%' }}>프로젝트명</th>
+              <th style={{ width: '10%' }}>유형</th>
               <th style={{ width: '9%' }}>타입</th>
-              <th style={{ width: '9%' }}>수정횟수</th>
-              <th style={{ width: '12%' }}>요청일</th>
-              <th style={{ width: '12%' }}>완료일</th>
-              <th style={{ width: '21%' }}>비고</th>
+              <th style={{ width: '9%' }}>요청일</th>
+              <th style={{ width: '9%' }}>완료일</th>
+              <th style={{ width: '9%' }}>리드타임</th>
+              <th style={{ width: '8%' }}>수정</th>
+              <th style={{ width: '19%' }}>비고</th>
             </tr>
           </thead>
           <tbody>
             {!f.length ? (
-              <tr><td colSpan={7} className="empty-r">완료된 태스크가 없습니다.</td></tr>
+              <tr><td colSpan={8} className="empty-r">완료된 태스크가 없습니다.</td></tr>
             ) : f.map(t => {
               const cat = CAT[t.cat] || { l: '', b: '' };
-              const tb  = t.ttype === 'edit' ? <span className="bdg b-edt">수정</span> : <span className="bdg b-new">신규</span>;
+              const tt  = TTYPE[t.ttype] || TTYPE.new;
               return (
                 <tr key={t.id} className="row" onClick={() => onOpenTask(t.id)}>
-                  <td style={{ fontWeight: 500, fontSize: 13 }}>{t.name}</td>
+                  <td style={{ fontWeight: 500, fontSize: 13 }}>{t.name}{t.asap && <span className="asap-tag">ASAP</span>}</td>
                   <td><span className={'bdg ' + cat.b}>{cat.l}</span></td>
-                  <td>{tb}</td>
-                  <td style={{ textAlign: 'center', fontWeight: 600 }}>{t.ecnt || 0}회</td>
+                  <td><span className={'bdg ' + tt[1]}>{tt[0]}</span></td>
                   <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.reqDate)}</td>
-                  <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.dueDate)}</td>
+                  <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.doneDate)}</td>
+                  <td style={{ fontWeight: 600 }}>{fmtLead(leadDays(t))}</td>
+                  <td style={{ fontWeight: 600 }}>{t.ecnt || 0}회</td>
                   <td style={{ fontSize: 11, color: '#9A9590' }}>{t.note ? t.note.slice(0, 40) + (t.note.length > 40 ? '…' : '') : ''}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Cards (mobile) */}
+      <div className="cw-cards">
+        {!f.length ? (
+          <div className="empty-r">완료된 태스크가 없습니다.</div>
+        ) : f.map(t => {
+          const cat = CAT[t.cat] || { l: '', b: '' };
+          return (
+            <div key={t.id} className="cw-card" onClick={() => onOpenTask(t.id)}>
+              <div className="cw-card-top">
+                <span className="cw-card-name">{t.name}</span>
+                <span className={'bdg ' + cat.b}>{cat.l}</span>
+              </div>
+              <div className="cw-card-meta">
+                <span>{fmtDate(t.reqDate)} → {fmtDate(t.doneDate)}</span>
+                {t.asap && <span className="asap-tag">ASAP</span>}
+              </div>
+              <div className="cw-card-nums">
+                <span>리드타임 <b>{fmtLead(leadDays(t))}</b></span>
+                <span>수정 <b>{t.ecnt || 0}회</b></span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

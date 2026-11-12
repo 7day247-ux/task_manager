@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { CAT, TYPE_LABELS } from '../utils/constants';
-import { api, getSteps, isCustomCat, toRow } from '../utils/helpers';
+import { api, getSteps, isCustomCat, toRow, leadDays, fmtLead, today } from '../utils/helpers';
 
 const INIT_TASK = {
   name: '', cat: 'pkg', reqDate: '', dueDate: '', asap: false,
-  status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [],
+  status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [], doneDate: '',
 };
 
 export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, showToast }) {
@@ -18,7 +18,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       setForm({
         name: task.name, cat: task.cat, reqDate: task.reqDate, dueDate: task.dueDate,
         asap: task.asap, status: task.status, note: task.note, ttype: task.ttype,
-        pkgType: task.pkgType, ecnt: task.ecnt, steps: task.steps,
+        pkgType: task.pkgType, ecnt: task.ecnt, steps: task.steps, doneDate: task.doneDate || '',
       });
       setCtrVal(task.ecnt || 0);
       if (isCustomCat(task.cat)) {
@@ -30,7 +30,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
         }));
       }
     } else {
-      setForm({ ...INIT_TASK, cat: defaultCat || 'pkg', reqDate: new Date().toISOString().slice(0, 10) });
+      setForm({ ...INIT_TASK, cat: defaultCat || 'pkg', reqDate: today() });
       setCsteps([]);
       setCtrVal(0);
     }
@@ -111,8 +111,9 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       name: form.name.trim(), cat: form.cat, reqDate: form.reqDate,
       dueDate: form.asap ? '' : form.dueDate, asap: form.asap,
       status: form.status, steps, note: form.note.trim(),
-      ttype: form.ttype, ecnt: form.ttype === 'edit' ? ctrVal : 0,
+      ttype: form.ttype, ecnt: ctrVal,
       pkgType: form.pkgType,
+      doneDate: form.status === 'done' ? (form.doneDate || today()) : '',
     };
     onClose();
     showToast('저장 중...');
@@ -145,9 +146,9 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       ? task.steps.filter(x => x && typeof x === 'object').map(x => ({ name: x.name, done: false }))
       : getSteps(task.cat).map(() => 0);
     const data = {
-      name: task.name + ' (복사)', cat: task.cat, reqDate: new Date().toISOString().slice(0, 10),
+      name: task.name + ' (복사)', cat: task.cat, reqDate: today(),
       dueDate: '', asap: false, status: 'waiting', steps: sc,
-      note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '',
+      note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '', doneDate: '',
     };
     try {
       await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
@@ -245,12 +246,34 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
 
           <div className="fg">
             <label className="fl">상태</label>
-            <select className="fs" value={form.status} onChange={e => set('status', e.target.value)}>
+            <select className="fs" value={form.status}
+              onChange={e => { set('status', e.target.value); if (e.target.value === 'done' && !form.doneDate) set('doneDate', today()); }}>
               <option value="waiting">대기</option>
               <option value="inprogress">진행중</option>
               <option value="hold">홀드</option>
               <option value="done">완료</option>
             </select>
+          </div>
+
+          {form.status === 'done' && (
+            <div className="fg">
+              <label className="fl">완료일 (최종 데이터 이관일)</label>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <input className="fi" type="date" value={form.doneDate} style={{ flex: 1 }}
+                  onChange={e => set('doneDate', e.target.value)} />
+                <span className="lead-chip">리드타임 {fmtLead(leadDays(form))}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="fg">
+            <label className="fl">수정 횟수</label>
+            <div className="ctr">
+              <button type="button" className="ctr-btn" onClick={() => setCtrVal(v => Math.max(0, v - 1))}>−</button>
+              <div className="ctr-num">{ctrVal}</div>
+              <button type="button" className="ctr-btn" onClick={() => setCtrVal(v => v + 1)}>+</button>
+              <span style={{ fontSize: 12, color: '#9A9590' }}>회 · 수정 요청을 받을 때마다 +1</span>
+            </div>
           </div>
 
           <div className="fg">
@@ -259,21 +282,9 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
               onChange={e => set('note', e.target.value)} />
           </div>
 
-          {form.ttype === 'edit' && (
-            <div className="fg">
-              <label className="fl">수정 횟수</label>
-              <div className="ctr">
-                <button className="ctr-btn" onClick={() => setCtrVal(v => Math.max(0, v - 1))}>−</button>
-                <div className="ctr-num">{ctrVal}</div>
-                <button className="ctr-btn" onClick={() => setCtrVal(v => v + 1)}>+</button>
-                <span style={{ fontSize: 12, color: '#9A9590' }}>회</span>
-              </div>
-            </div>
-          )}
-
           {form.ttype !== 'edit' && (
             <div className="ss">
-              <div className="st">{isCust ? '할 일 체크리스트' : (form.cat === 'pkg' ? '패키지 단계 체크리스트' : '영상 단계 체크리스트')}</div>
+              <div className="st">{isCust ? '할 일 체크리스트' : '패키지 단계 체크리스트'}</div>
               <div>
                 {isCust ? (
                   custSteps.map((it, i) => (

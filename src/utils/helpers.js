@@ -98,6 +98,7 @@ export function toRow(d) {
     task_type: d.ttype || 'new',
     edit_count: d.ecnt || 0,
     pkg_type: d.pkgType || '',
+    done_date: d.status === 'done' ? (d.doneDate || null) : null,
   };
 }
 
@@ -118,11 +119,29 @@ export function mapTask(r) {
     ttype: r.task_type || 'new',
     ecnt: r.edit_count || 0,
     pkgType: r.pkg_type || '',
+    doneDate: r.done_date || '',
   };
 }
 
+// 리드타임: 요청일부터 완료일까지 걸린 날짜 수 (달력 기준, 같은 날이면 0)
+export function leadDays(task) {
+  if (!task.reqDate || !task.doneDate) return null;
+  const d = Math.round((new Date(task.doneDate) - new Date(task.reqDate)) / 86400000);
+  return d >= 0 ? d : null;
+}
+
+export function fmtLead(d) {
+  return d === null || d === undefined ? '—' : d === 0 ? '당일' : d + '일';
+}
+
+// 기기 시간대 기준 오늘 날짜 (toISOString은 UTC라 한국 오전 9시 전에는 어제로 나온다)
+export function ymd(d) {
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+
 export function today() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 
 export function printTasksHtml(tasks, mode) {
@@ -163,7 +182,8 @@ export function printTasksHtml(tasks, mode) {
       <thead><tr>
         <th style="${thS}">프로젝트명</th><th style="${thS}">유형</th>
         <th style="${thS}">타입</th><th style="${thS}">수정횟수</th>
-        <th style="${thS}">요청일</th><th style="${thS}">비고</th>
+        <th style="${thS}">요청일</th><th style="${thS}">완료일</th>
+        <th style="${thS}">리드타임</th><th style="${thS}">비고</th>
       </tr></thead><tbody>`;
     done.forEach((t, i) => {
       const cat = CAT[t.cat] || { l: '' };
@@ -173,6 +193,8 @@ export function printTasksHtml(tasks, mode) {
         <td style="${tdS}">${t.ttype === 'edit' ? '수정' : '신규'}</td>
         <td style="${tdS}text-align:center;">${t.ecnt || 0}회</td>
         <td style="${tdS}">${fmtDate(t.reqDate)}</td>
+        <td style="${tdS}">${fmtDate(t.doneDate)}</td>
+        <td style="${tdS}">${fmtLead(leadDays(t))}${t.asap ? ' (ASAP)' : ''}</td>
         <td style="${tdS}">${t.note || ''}</td>
       </tr>`;
     });

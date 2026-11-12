@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { api } from '../utils/helpers';
+import { api, today } from '../utils/helpers';
 
 export default function LeaveModal({ leaves, onClose, onSaved, showToast }) {
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(today());
   const [amt, setAmt]   = useState('1');
 
   const total = leaves.reduce((s, l) => s + Number(l.amount), 0);

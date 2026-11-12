@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { KR_HOLIDAYS } from '../utils/constants';
 import { STATUS, CAT, EVENT_TYPE } from '../utils/constants';
-import { pad, fmtDate, pct, getDdayInfo, api } from '../utils/helpers';
+import { pad, fmtDate, pct, getDdayInfo, api, today } from '../utils/helpers';
 import LeaveModal from '../components/LeaveModal';
 
 const FILTER_CHIPS = [
@@ -34,7 +34,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
   }
   const evTime = e => e.start_time ? e.start_time + (e.end_time ? '–' + e.end_time : '') : '';
 
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = today();
 
   function chMo(d) {
     let m = calM + d, y = calY;
