@@ -32,7 +32,7 @@ function DonutCard({ id, label, percent, color, desc, onClick }) {
   );
 }
 
-export default function Dashboard({ tasks, onGoTaskFilter, onSignOut }) {
+export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePassword }) {
   const now    = new Date();
   const days   = ['일', '월', '화', '수', '목', '금', '토'];
   const dateStr = (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + days[now.getDay()] + '요일';
@@ -59,6 +59,7 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut }) {
     <div className="page on">
       <div className="dg">
         <div className="dg-date">{dateStr}
+          <button className="dg-out" onClick={onChangePassword}>비밀번호 변경</button>
           <button className="dg-out" onClick={onSignOut}>로그아웃</button>
         </div>
         <div className="dg-hello">안녕하세요, Sunhee님! 👋</div>

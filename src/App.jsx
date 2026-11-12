@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import LockScreen from './components/LockScreen';
+import ChangePasswordModal from './components/ChangePasswordModal';
 import { getSession, signOut } from './utils/auth';
 import Sidebar from './components/Sidebar';
 import Toast from './components/Toast';
@@ -37,6 +38,7 @@ function AppInner() {
   const [authed, setAuthed] = useState(!!getSession());
   const [taskModal, setTaskModal]   = useState(null);
   const [taskFilter, setTaskFilter] = useState(null);
+  const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
     tasks, meetings, mtItems, leaves, events,
@@ -90,12 +92,12 @@ function AppInner() {
 
   return (
     <div className="app" style={{ display: 'flex' }}>
-      <Sidebar curPage={curPage} onNav={goPage} onPrint={printCurrent} onSignOut={handleSignOut} />
+      <Sidebar curPage={curPage} onNav={goPage} onPrint={printCurrent} onSignOut={handleSignOut} onChangePassword={() => setPwModalOpen(true)} />
 
       <div className="main show">
         <Routes>
           <Route path="/" element={
-            <Dashboard tasks={tasks} onGoTaskFilter={goTaskFilter} onSignOut={handleSignOut} />
+            <Dashboard tasks={tasks} onGoTaskFilter={goTaskFilter} onSignOut={handleSignOut} onChangePassword={() => setPwModalOpen(true)} />
           } />
           <Route path="/tasks" element={
             <Tasks tasks={tasks} onOpenTask={openTask} filterStatus={taskFilter} />
@@ -127,6 +129,8 @@ function AppInner() {
           showToast={showToast}
         />
       )}
+
+      {pwModalOpen && <ChangePasswordModal onClose={() => setPwModalOpen(false)} showToast={showToast} />}
 
       <Toast {...toast} />
       <div id="print-area" style={{ display: 'none' }} />
