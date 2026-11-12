@@ -9,7 +9,7 @@ const NAV_ITEMS = [
   { id: 'reflection', icon: '🌱', label: 'Reflection' },
 ];
 
-export default function Sidebar({ curPage, onNav, onPrint }) {
+export default function Sidebar({ curPage, onNav, onPrint, onSignOut }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -55,6 +55,10 @@ export default function Sidebar({ curPage, onNav, onPrint }) {
           <button className="sb-pdf" onClick={onPrint} title="PDF 내보내기">
             <span className="sb-ico">🖨️</span>
             <span className="sb-label">PDF 내보내기</span>
+          </button>
+          <button className="sb-pdf" onClick={onSignOut} title="로그아웃">
+            <span className="sb-ico">🚪</span>
+            <span className="sb-label">로그아웃</span>
           </button>
         </div>
       </nav>
