@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { STATUS, CAT } from '../utils/constants';
-import { fmtDate, pct, getDdayInfo, today, ymd } from '../utils/helpers';
+import { fmtDate, pct, getDdayInfo, today, ymd, tenure, anniversary } from '../utils/helpers';
 
 function DonutCard({ id, label, percent, color, desc, onClick }) {
   const fillRef = useRef(null);
@@ -63,6 +63,12 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePa
           <button className="dg-out" onClick={onSignOut}>로그아웃</button>
         </div>
         <div className="dg-hello">안녕하세요, Sunhee님! 👋</div>
+        {tenure() && (
+          <div className="dg-tenure">
+            {anniversary(today()) ? '🎉 오늘은 ' + anniversary(today()) + '이에요 · ' : ''}
+            입사 {tenure().days.toLocaleString()}일째{tenure().years > 0 ? ' · 만 ' + tenure().years + '년' : ''} · {tenure().years + 1}년차
+          </div>
+        )}
       </div>
 
       <div className="dc">

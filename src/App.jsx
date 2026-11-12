@@ -12,6 +12,7 @@ import Calendar from './pages/Calendar';
 import MeetingNotes from './pages/MeetingNotes';
 import CompletedWork from './pages/CompletedWork';
 import Reflection from './pages/Reflection';
+import Gallery from './pages/Gallery';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAppData } from './hooks/useAppData';
 import { printTasksHtml } from './utils/helpers';
@@ -22,6 +23,7 @@ const PATH_TO_PAGE = {
   '/calendar':   'calendar',
   '/meetings':   'meetings',
   '/completed':  'completed',
+  '/gallery':    'gallery',
   '/reflection': 'reflection',
 };
 const PAGE_TO_PATH = {
@@ -30,6 +32,7 @@ const PAGE_TO_PATH = {
   calendar:   '/calendar',
   meetings:   '/meetings',
   completed:  '/completed',
+  gallery:    '/gallery',
   reflection: '/reflection',
 };
 
@@ -42,7 +45,7 @@ function AppInner() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
-    tasks, meetings, mtItems, leaves, events, projects,
+    tasks, meetings, mtItems, leaves, events, projects, images, reloadImages,
     toast, showToast,
     loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
@@ -113,6 +116,9 @@ function AppInner() {
           <Route path="/completed" element={
             <CompletedWork tasks={tasks} events={events} projects={projects} onOpenTask={openTask} />
           } />
+          <Route path="/gallery" element={
+            <Gallery images={images} projects={projects} tasks={tasks} onReload={reloadImages} showToast={showToast} />
+          } />
           <Route path="/reflection" element={
             <Reflection showToast={showToast} />
           } />
@@ -128,6 +134,8 @@ function AppInner() {
           defaultCat={taskModal.defaultCat}
           tasks={tasks}
           projects={projects}
+          images={images}
+          onReloadImages={reloadImages}
           onClose={() => setTaskModal(null)}
           onSaved={async () => { await loadAll(); }}
           showToast={showToast}

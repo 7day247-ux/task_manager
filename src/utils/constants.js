@@ -109,6 +109,9 @@ export const KR_HOLIDAYS = {
   '2027-10-11': '대체공휴일', '2027-12-25': '성탄절', '2027-12-27': '대체공휴일',
 };
 
+// 첫 근무일. 매년 이 날이 입사 기념일이다.
+export const JOIN_DATE = '2026-10-19';
+
 export const REFLECTION_PASSWORD = '2233';
 
 export const MOODS = [
