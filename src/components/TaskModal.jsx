@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL, ITEM_SUGGEST, POSM_LABELS, PRODUCT_LINE } from '../utils/constants';
+import ImageGrid, { UploadButton } from './ImageGrid';
 import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
 
 const INIT_TASK = {
@@ -8,7 +9,7 @@ const INIT_TASK = {
   items: [], proposalCount: 0, finalType: '', projectId: null,
 };
 
-export default function TaskModal({ task, tasks, projects = [], defaultCat, onClose, onSaved, showToast }) {
+export default function TaskModal({ task, tasks, projects = [], images = [], onReloadImages, defaultCat, onClose, onSaved, showToast }) {
   const isEdit = !!task;
   const [form, setForm]     = useState(() => (!task && defaultCat ? { ...INIT_TASK, cat: defaultCat } : INIT_TASK));
   const [csteps, setCsteps] = useState([]);
@@ -417,6 +418,31 @@ export default function TaskModal({ task, tasks, projects = [], defaultCat, onCl
               <span style={{ fontSize: 12, color: '#9A9590' }}>회 · 수정 요청을 받을 때마다 +1</span>
             </div>
           </div>
+
+          {form.cat !== 'general' && (
+            <div className="fg">
+              <label className="fl">이미지</label>
+              {task ? (
+                <>
+                  {['final', 'mood'].map(k => {
+                    const list = images.filter(i => i.task_id === task.id && i.kind === k);
+                    return list.length > 0 && (
+                      <div key={k} className="ti-grp">
+                        <div className="ti-lbl">{k === 'final' ? '최종 디자인' : '무드보드'} {list.length}장</div>
+                        <ImageGrid small images={list} onChanged={onReloadImages} showToast={showToast} />
+                      </div>
+                    );
+                  })}
+                  <div className="dt-row">
+                    <UploadButton label="+ 최종 디자인" kind="final" taskId={task.id} projectId={form.projectId} onDone={onReloadImages} showToast={showToast} />
+                    <UploadButton label="+ 무드보드" kind="mood" taskId={task.id} projectId={form.projectId} onDone={onReloadImages} showToast={showToast} />
+                  </div>
+                </>
+              ) : (
+                <div className="fhint" style={{ marginTop: 0 }}>태스크를 저장한 뒤 다시 열면 최종 디자인과 무드보드를 올릴 수 있어요.</div>
+              )}
+            </div>
+          )}
 
           <div className="fg">
             <label className="fl">비고</label>

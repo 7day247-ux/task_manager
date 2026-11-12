@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { KR_HOLIDAYS } from '../utils/constants';
 import { STATUS, CAT, EVENT_TYPE } from '../utils/constants';
-import { pad, fmtDate, pct, getDdayInfo, api, today } from '../utils/helpers';
+import { pad, fmtDate, pct, getDdayInfo, api, today, anniversary } from '../utils/helpers';
 import LeaveModal from '../components/LeaveModal';
 
 const FILTER_CHIPS = [
@@ -193,6 +193,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
               <div key={i} className={cls} onClick={() => selectDay(ds)}>
                 <div className="dn">{dn}</div>
                 {holiday && !oth && <div className="cal-holiday-lbl">{holiday}</div>}
+                {anniversary(ds) && !oth && <div className="cal-anniv-lbl">🎉 {anniversary(ds)}</div>}
                 {leaveAmt > 0 && !oth && <div className="cal-leave-lbl">연차 {leaveAmt}일</div>}
                 {evs.slice(0, 2).map(e => {
                   const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
@@ -231,6 +232,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
             <div className="cal-det-ttl">
               {(selData.d.getMonth() + 1)}월 {selData.d.getDate()}일 ({selData.days[selData.d.getDay()]})
               {selData.holiday && ' · 🎌' + selData.holiday}
+              {anniversary(calSel) && ' · 🎉 ' + anniversary(calSel)}
               {selData.leaveAmt > 0 && ' · 🏖️연차 ' + selData.leaveAmt + '일'}
             </div>
             {selData.leaveAmt > 0 ? (

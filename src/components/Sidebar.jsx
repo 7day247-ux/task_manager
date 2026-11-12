@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { id: 'calendar',   icon: '📅', label: '캘린더' },
   { id: 'meetings',   icon: '📝', label: '회의록' },
   { id: 'completed',  icon: '🏆', label: '완료' },
+  { id: 'gallery',    icon: '🖼️', label: '갤러리' },
   { id: 'reflection', icon: '🌱', label: 'Reflection' },
 ];
 

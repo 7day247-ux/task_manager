@@ -1,4 +1,4 @@
-import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT, KR_HOLIDAYS } from './constants';
+import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT, KR_HOLIDAYS, JOIN_DATE } from './constants';
 import { getAccessToken, signOut } from './auth';
 
 export async function api(path, opts = {}) {
@@ -235,6 +235,22 @@ export function fmtLead(d) {
 export function leadLabel(task) {
   const m = leadMinutes(task);
   return m !== null ? fmtMinutes(m) : fmtLead(leadDays(task));
+}
+
+// 입사 기념일이면 '입사일' 또는 '입사 N주년', 아니면 null
+export function anniversary(ds) {
+  if (!ds || ds.slice(5) !== JOIN_DATE.slice(5)) return null;
+  const n = parseInt(ds.slice(0, 4)) - parseInt(JOIN_DATE.slice(0, 4));
+  return n < 0 ? null : n === 0 ? '입사일' : '입사 ' + n + '주년';
+}
+
+// 오늘 기준 근속: { days: 입사 며칠째(입사일이 1일째), years: 꽉 채운 햇수 }
+export function tenure() {
+  const a = parseYmd(JOIN_DATE), b = parseYmd(today());
+  if (b < a) return null;
+  let years = b.getFullYear() - a.getFullYear();
+  if (b.getMonth() < a.getMonth() || (b.getMonth() === a.getMonth() && b.getDate() < a.getDate())) years--;
+  return { days: Math.round((b - a) / 86400000) + 1, years };
 }
 
 // 기기 시간대 기준 오늘 날짜 (toISOString은 UTC라 한국 오전 9시 전에는 어제로 나온다)
