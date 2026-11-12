@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signIn, updatePassword, getEmail } from '../utils/auth';
 import EyeIcon from './EyeIcon';
+import SecretInput from './SecretInput';
 
 export default function ChangePasswordModal({ onClose, showToast }) {
   const email = getEmail();
@@ -46,7 +47,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
             <div className="pwm-grp">
               <label className="pwm-lbl">현재 비밀번호</label>
               <div className="lock-field">
-                <input className="lock-inp" type={showCur ? 'text' : 'password'}
+                <SecretInput className="lock-inp" show={showCur}
                   value={curPw} onChange={e => setCurPw(e.target.value)} autoFocus />
                 <button type="button" className="lock-eye" tabIndex={-1}
                   onClick={() => setShowCur(v => !v)}><EyeIcon show={showCur} /></button>
@@ -55,7 +56,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
             <div className="pwm-grp">
               <label className="pwm-lbl">새 비밀번호</label>
               <div className="lock-field">
-                <input className="lock-inp" type={showNew ? 'text' : 'password'}
+                <SecretInput className="lock-inp" show={showNew}
                   value={newPw} onChange={e => setNewPw(e.target.value)} />
                 <button type="button" className="lock-eye" tabIndex={-1}
                   onClick={() => setShowNew(v => !v)}><EyeIcon show={showNew} /></button>
@@ -63,7 +64,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
             </div>
             <div className="pwm-grp">
               <label className="pwm-lbl">새 비밀번호 확인</label>
-              <input className="lock-inp" style={{ marginBottom: 0 }} type={showNew ? 'text' : 'password'}
+              <SecretInput className="lock-inp" style={{ marginBottom: 0 }} show={showNew}
                 value={newPw2} onChange={e => setNewPw2(e.target.value)} />
             </div>
             <div className="lock-err">{err}</div>

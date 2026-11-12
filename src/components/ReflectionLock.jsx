@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { REFLECTION_PASSWORD } from '../utils/constants';
+import SecretInput from './SecretInput';
 
 export default function ReflectionLock({ onUnlock }) {
   const [pw, setPw]   = useState('');
@@ -23,9 +24,10 @@ export default function ReflectionLock({ onUnlock }) {
         <div className="rf-lock-icon">🔒</div>
         <div className="rf-lock-title">Reflection</div>
         <div className="rf-lock-sub">나만의 성장 일지예요</div>
-        <input
+        <SecretInput
           className="lock-inp"
-          type="password"
+          show={false}
+          inputMode="numeric"
           placeholder="••••"
           maxLength={4}
           value={pw}

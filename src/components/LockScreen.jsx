@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { signIn } from '../utils/auth';
 import EyeIcon from './EyeIcon';
+import SecretInput from './SecretInput';
 
 export default function LockScreen({ onUnlock }) {
   const [email, setEmail] = useState('');
@@ -33,9 +34,9 @@ export default function LockScreen({ onUnlock }) {
         <div className="lock-sub">로그인해주세요</div>
 
         <div className="lock-field">
-          <input
+          <SecretInput
             className="lock-inp lock-inp-email"
-            type={showEmail ? 'text' : 'password'}
+            show={showEmail}
             name="email"
             autoComplete="username"
             placeholder="이메일"
@@ -47,9 +48,9 @@ export default function LockScreen({ onUnlock }) {
         </div>
 
         <div className="lock-field">
-          <input
+          <SecretInput
             className="lock-inp"
-            type={showPw ? 'text' : 'password'}
+            show={showPw}
             name="password"
             autoComplete="current-password"
             placeholder="••••••••"
