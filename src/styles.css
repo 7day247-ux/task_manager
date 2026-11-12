@@ -11,6 +11,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1C1A16;font
 .lock-sub{font-size:12px;color:#9A9590;margin-bottom:1.5rem;}
 .lock-inp{width:100%;border:1.5px solid #D9D4C8;border-radius:10px;padding:11px;font-size:15px;text-align:center;letter-spacing:6px;background:#FAF9F6;color:#1C1A16;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;}
 .lock-inp-email{letter-spacing:normal;}
+.masked{-webkit-text-security:disc;}
 .lock-field{position:relative;margin-bottom:8px;}
 .lock-field .lock-inp{margin-bottom:0;padding-right:40px;}
 .lock-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:6px;line-height:1;color:#9A9590;display:flex;align-items:center;}
