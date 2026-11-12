@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { KR_HOLIDAYS } from '../utils/constants';
 import { STATUS, CAT, EVENT_TYPE } from '../utils/constants';
 import { pad, fmtDate, pct, getDdayInfo, api, today, anniversary } from '../utils/helpers';
@@ -153,9 +154,9 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: '#9A9590' }}>연차: <span>{totalLeave}</span>일</span>
+            <span style={{ fontSize: 12, color: '#8A8A8A' }}>연차: <span>{totalLeave}</span>일</span>
             <button className="btn btn-sm" style={{ fontSize: 11 }}
-              onClick={() => { setLeaveInitDate(todayStr); setLeaveOpen(true); }}>🏖️ 연차</button>
+              onClick={() => { setLeaveInitDate(todayStr); setLeaveOpen(true); }}><Icon name="palm" size={13} /> 연차</button>
           </div>
           <div className="cal-evsum">
             {Object.entries(EVENT_TYPE).map(([k, m]) => (
@@ -193,7 +194,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
               <div key={i} className={cls} onClick={() => selectDay(ds)}>
                 <div className="dn">{dn}</div>
                 {holiday && !oth && <div className="cal-holiday-lbl">{holiday}</div>}
-                {anniversary(ds) && !oth && <div className="cal-anniv-lbl">🎉 {anniversary(ds)}</div>}
+                {anniversary(ds) && !oth && <div className="cal-anniv-lbl">{anniversary(ds)}</div>}
                 {leaveAmt > 0 && !oth && <div className="cal-leave-lbl">연차 {leaveAmt}일</div>}
                 {evs.slice(0, 2).map(e => {
                   const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
@@ -231,18 +232,18 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
           <>
             <div className="cal-det-ttl">
               {(selData.d.getMonth() + 1)}월 {selData.d.getDate()}일 ({selData.days[selData.d.getDay()]})
-              {selData.holiday && ' · 🎌' + selData.holiday}
-              {anniversary(calSel) && ' · 🎉 ' + anniversary(calSel)}
-              {selData.leaveAmt > 0 && ' · 🏖️연차 ' + selData.leaveAmt + '일'}
+              {selData.holiday && ' · ' + selData.holiday}
+              {anniversary(calSel) && ' · ' + anniversary(calSel)}
+              {selData.leaveAmt > 0 && ' · 연차 ' + selData.leaveAmt + '일'}
             </div>
             {selData.leaveAmt > 0 ? (
-              <div style={{ background: '#EEF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#1A6BB5' }}>🏖️ 연차 {selData.leaveAmt}일</span>
+              <div style={{ background: '#FFF4EC', border: '1px solid #FFD3B0', borderRadius: 10, padding: '10px 14px', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#B5520C', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Icon name="palm" size={15} /> 연차 {selData.leaveAmt}일</span>
                 <button onClick={() => handleDeleteLeaveDate(calSel)} style={{ fontSize: 11, color: '#E24B4A', background: 'none', border: 'none', cursor: 'pointer' }}>삭제</button>
               </div>
             ) : (
               <div style={{ marginBottom: 10 }}>
-                <button className="btn btn-sm" style={{ fontSize: 11, color: '#185FA5', borderColor: '#BFDBFE' }}
+                <button className="btn btn-sm" style={{ fontSize: 11, color: '#B5520C', borderColor: '#FFD3B0' }}
                   onClick={() => { setLeaveInitDate(calSel); setLeaveOpen(true); }}>+ 이날 연차 추가</button>
               </div>
             )}
@@ -252,7 +253,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
                 const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
                 return (
                   <div key={e.id} className="cal-evrow">
-                    <span className="cal-evtag" style={{ background: m.bg, color: m.fg }}>{m.i} {m.l}</span>
+                    <span className="cal-evtag" style={{ background: m.bg, color: m.fg }}><Icon name={m.i} size={12} /> {m.l}</span>
                     {evTime(e) && <span className="cal-evtime">{evTime(e)}</span>}
                     <span className="cal-evname">{e.title || '—'}</span>
                     <button className="cal-evedit" onClick={() => startEdit(e)}>수정</button>
@@ -262,7 +263,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
               })}
               <div className="cal-evtypes">
                 {Object.entries(EVENT_TYPE).map(([k, m]) => (
-                  <button key={k} className={'cal-chip' + (evType === k ? ' on' : '')} onClick={() => setEvType(k)}>{m.i} {m.l}</button>
+                  <button key={k} className={'cal-chip' + (evType === k ? ' on' : '')} onClick={() => setEvType(k)}><Icon name={m.i} size={13} /> {m.l}</button>
                 ))}
               </div>
               <div className="cal-evtimes">
@@ -289,7 +290,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
               return (
                 <div key={t.id} className="cal-tc" style={isDone ? { opacity: .55 } : {}}>
                   <div className="cal-tc-top">
-                    <div className="cal-tc-name">{t.name}{isDone ? ' ✓' : ''}</div>
+                    <div className="cal-tc-name">{t.name}{isDone && <Icon name="check" size={13} stroke={2.25} style={{ marginLeft: 4, verticalAlign: -2 }} />}</div>
                     <span className={'bdg ' + cat.b}>{cat.l}</span>
                   </div>
                   <div className="cal-tc-meta">
@@ -299,7 +300,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
                     {dd && <span className={'dday ' + dd.cls}>{dd.label}</span>}
                   </div>
                   <div className="pbar"><div className="pfill" style={{ width: p + '%', background: st.c }} /></div>
-                  {t.note && <div style={{ fontSize: 11, color: '#9A9590', marginTop: 6 }}>{t.note.slice(0, 60)}{t.note.length > 60 ? '…' : ''}</div>}
+                  {t.note && <div style={{ fontSize: 11, color: '#8A8A8A', marginTop: 6 }}>{t.note.slice(0, 60)}{t.note.length > 60 ? '…' : ''}</div>}
                 </div>
               );
             })}

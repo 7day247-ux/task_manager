@@ -265,10 +265,10 @@ export function today() {
 
 export function printTasksHtml(tasks, mode) {
   const dt = new Date().toLocaleDateString('ko-KR');
-  const thS = 'background:#2C2C2A;color:#fff;padding:6px 10px;text-align:left;font-size:10px;border:1px solid #ccc;';
+  const thS = 'background:#111111;color:#fff;padding:6px 10px;text-align:left;font-size:10px;border:1px solid #ccc;';
   const tdS = 'padding:5px 10px;font-size:10px;border:1px solid #e0e0e0;vertical-align:top;';
   let html = `<div style="padding:24px;font-family:sans-serif;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;border-bottom:2px solid #2C2C2A;padding-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px;border-bottom:2px solid #111111;padding-bottom:10px;">
       <div style="font-size:16px;font-weight:700;">업무 현황</div>
       <div style="font-size:11px;color:#888;">${dt}</div>
     </div>`;
@@ -284,7 +284,7 @@ export function printTasksHtml(tasks, mode) {
     act.forEach((t, i) => {
       const cat = CAT[t.cat] || { l: '' };
       const st = STATUS[t.status];
-      html += `<tr style="${i % 2 ? 'background:#f8f8f6;' : ''}">
+      html += `<tr style="${i % 2 ? 'background:#F6F6F6;' : ''}">
         <td style="${tdS}font-weight:600;">${t.name}</td>
         <td style="${tdS}">${cat.l}</td>
         <td style="${tdS}">${curStep(t)}</td>
@@ -306,7 +306,7 @@ export function printTasksHtml(tasks, mode) {
       </tr></thead><tbody>`;
     done.forEach((t, i) => {
       const cat = CAT[t.cat] || { l: '' };
-      html += `<tr style="${i % 2 ? 'background:#f8f8f6;' : ''}">
+      html += `<tr style="${i % 2 ? 'background:#F6F6F6;' : ''}">
         <td style="${tdS}font-weight:600;">${t.name}</td>
         <td style="${tdS}">${cat.l}</td>
         <td style="${tdS}">${t.ttype === 'edit' ? '수정' : '신규'}</td>

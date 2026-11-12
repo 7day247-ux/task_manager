@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import Icon, { Mark } from './Icon';
 
 const NAV_ITEMS = [
-  { id: 'dashboard',  icon: '🏠', label: '대시보드' },
-  { id: 'tasks',      icon: '✅', label: '태스크' },
-  { id: 'calendar',   icon: '📅', label: '캘린더' },
-  { id: 'meetings',   icon: '📝', label: '회의록' },
-  { id: 'completed',  icon: '🏆', label: '완료' },
-  { id: 'gallery',    icon: '🖼️', label: '갤러리' },
-  { id: 'reflection', icon: '🌱', label: 'Reflection' },
+  { id: 'dashboard',  icon: 'home', label: '대시보드' },
+  { id: 'tasks',      icon: 'tasks', label: '태스크' },
+  { id: 'calendar',   icon: 'calendar', label: '캘린더' },
+  { id: 'meetings',   icon: 'notes', label: '회의록' },
+  { id: 'completed',  icon: 'trophy', label: '완료' },
+  { id: 'gallery',    icon: 'images', label: '갤러리' },
+  { id: 'reflection', icon: 'sprout', label: 'Reflection' },
 ];
 
 export default function Sidebar({ curPage, onNav, onPrint, onSignOut, onChangePassword }) {
@@ -23,7 +24,7 @@ export default function Sidebar({ curPage, onNav, onPrint, onSignOut, onChangePa
       >
         <div className="sb-top">
           <div className="sb-brand">
-            <div className="sb-logo">🎨</div>
+            <div className="sb-logo"><Mark size={36} /></div>
             <span className="sb-bname">Atelier</span>
           </div>
           <div className="sb-prof">
@@ -45,7 +46,7 @@ export default function Sidebar({ curPage, onNav, onPrint, onSignOut, onChangePa
                 onClick={e => { e.preventDefault(); onNav(item.id); }}
                 title={item.label}
               >
-                <span className="sb-ico">{item.icon}</span>
+                <span className="sb-ico"><Icon name={item.icon} size={20} /></span>
                 <span className="sb-label">{item.label}</span>
               </a>
             </li>
@@ -54,15 +55,15 @@ export default function Sidebar({ curPage, onNav, onPrint, onSignOut, onChangePa
 
         <div className="sb-bot">
           <button className="sb-pdf" onClick={onPrint} title="PDF 내보내기">
-            <span className="sb-ico">🖨️</span>
+            <span className="sb-ico"><Icon name="printer" size={20} /></span>
             <span className="sb-label">PDF 내보내기</span>
           </button>
           <button className="sb-pdf" onClick={onChangePassword} title="비밀번호 변경">
-            <span className="sb-ico">🔑</span>
+            <span className="sb-ico"><Icon name="key" size={20} /></span>
             <span className="sb-label">비밀번호 변경</span>
           </button>
           <button className="sb-pdf" onClick={onSignOut} title="로그아웃">
-            <span className="sb-ico">🚪</span>
+            <span className="sb-ico"><Icon name="logout" size={20} /></span>
             <span className="sb-label">로그아웃</span>
           </button>
         </div>
@@ -76,7 +77,7 @@ export default function Sidebar({ curPage, onNav, onPrint, onSignOut, onChangePa
             className={'mobile-tab' + (curPage === item.id ? ' on' : '')}
             onClick={() => onNav(item.id)}
           >
-            <span className="mobile-tab-icon">{item.icon}</span>
+            <span className="mobile-tab-icon"><Icon name={item.icon} size={21} /></span>
             <span className="mobile-tab-label">{item.label}</span>
           </button>
         ))}

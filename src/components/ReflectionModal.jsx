@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { MOODS, REFLECTION_TAGS } from '../utils/constants';
 import { api, today } from '../utils/helpers';
 
@@ -90,12 +91,12 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
     <div className="ovl" style={{ display: 'flex' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal" style={{ maxWidth: 540 }} onClick={e => e.stopPropagation()}>
-        <div className="mhd" style={{ background: '#FAF8FF', borderRadius: '20px 20px 0 0' }}>
+        <div className="mhd" style={{ background: '#F6F6F6', borderRadius: '20px 20px 0 0' }}>
           <div>
             <div className="mhd-t">{isEdit ? '기록 수정' : '새 기록'}</div>
             <div className="mhd-s">Reflection</div>
           </div>
-          <button className="xbtn" onClick={onClose}>✕</button>
+          <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
 
         <div className="mbd">
@@ -115,12 +116,12 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
                     style={{
                       padding: '5px 10px', borderRadius: 20, fontSize: 12, cursor: 'pointer',
                       border: '1.5px solid',
-                      borderColor: form.mood === m.id ? '#6B5FA0' : '#E8E4DC',
-                      background: form.mood === m.id ? '#F0EEFB' : '#FFFFFF',
-                      color: form.mood === m.id ? '#6B5FA0' : '#9A9590',
+                      borderColor: form.mood === m.id ? '#111111' : '#E3E3E3',
+                      background: form.mood === m.id ? '#F0F0F0' : '#FFFFFF',
+                      color: form.mood === m.id ? '#111111' : '#8A8A8A',
                       fontFamily: 'Noto Sans KR, sans-serif',
                     }}>
-                    {m.icon} {m.label}
+                    <Icon name={m.icon} size={14} /> {m.label}
                   </button>
                 ))}
               </div>
@@ -136,7 +137,7 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
 
           {/* 상황 */}
           <div className="fg">
-            <label className="fl">📌 상황</label>
+            <label className="fl fl-ico"><Icon name="pin" size={13} /> 상황</label>
             <textarea className="fta" rows={3}
               placeholder="어떤 상황이었나요? 구체적으로 적을수록 좋아요"
               value={form.situation} onChange={e => set('situation', e.target.value)} />
@@ -144,7 +145,7 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
 
           {/* 배운 것 */}
           <div className="fg">
-            <label className="fl">💡 배운 것</label>
+            <label className="fl fl-ico"><Icon name="bulb" size={13} /> 배운 것</label>
             <textarea className="fta" rows={2}
               placeholder="이 상황에서 무엇을 배웠나요?"
               value={form.learned} onChange={e => set('learned', e.target.value)} />
@@ -152,7 +153,7 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
 
           {/* 다음에 */}
           <div className="fg">
-            <label className="fl">✅ 다음에는</label>
+            <label className="fl fl-ico"><Icon name="check" size={13} /> 다음에는</label>
             <textarea className="fta" rows={2}
               placeholder="다음에는 어떻게 할 건가요? 구체적인 행동으로"
               value={form.next_action} onChange={e => set('next_action', e.target.value)} />
@@ -167,18 +168,18 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
                   display: 'flex', alignItems: 'center', gap: 10,
                   padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
                   border: '1.5px solid',
-                  borderColor: form.tags.includes(tag.id) ? '#6B5FA0' : '#E8E4DC',
-                  background: form.tags.includes(tag.id) ? '#F0EEFB' : '#FAFAF8',
+                  borderColor: form.tags.includes(tag.id) ? '#111111' : '#E3E3E3',
+                  background: form.tags.includes(tag.id) ? '#F0F0F0' : '#F6F6F6',
                   transition: 'all .15s',
                 }}>
                   <input type="checkbox" checked={form.tags.includes(tag.id)}
                     onChange={() => toggleTag(tag.id)}
-                    style={{ accentColor: '#6B5FA0', width: 14, height: 14, flexShrink: 0 }} />
+                    style={{ accentColor: '#111111', width: 14, height: 14, flexShrink: 0 }} />
                   <div>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: form.tags.includes(tag.id) ? '#6B5FA0' : '#1C1A16' }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: form.tags.includes(tag.id) ? '#111111' : '#111111' }}>
                       #{tag.id}
                     </span>
-                    <span style={{ fontSize: 11, color: '#9A9590', marginLeft: 8 }}>{tag.desc}</span>
+                    <span style={{ fontSize: 11, color: '#8A8A8A', marginLeft: 8 }}>{tag.desc}</span>
                   </div>
                 </label>
               ))}
@@ -192,7 +193,7 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
               onClick={del}>삭제</button>
           )}
           <button className="btn" onClick={onClose}>취소</button>
-          <button className="btn btn-p" style={{ background: '#6B5FA0', borderColor: 'transparent' }}
+          <button className="btn btn-p"
             onClick={save}>저장</button>
         </div>
       </div>

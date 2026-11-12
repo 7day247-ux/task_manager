@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { CAT } from '../utils/constants';
 import { isCustomCat, getSteps, pct } from '../utils/helpers';
 import TaskTable from '../components/TaskTable';
@@ -26,7 +27,7 @@ export default function Tasks({ tasks, onOpenTask, filterStatus }) {
         return (
           <div key={key} className="tcat">
             <div className="tcat-hd">
-              <span className="tcat-ico">{meta.i}</span>
+              <span className="tcat-ico"><Icon name={meta.i} size={18} /></span>
               <span className="tcat-ttl">{meta.l}</span>
               <span className="tcat-cnt">{rows.length}건</span>
               <button className="btn btn-sm btn-p tcat-add" onClick={() => onOpenTask(null, key)}>+ 추가</button>

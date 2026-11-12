@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { CAT, EVENT_TYPE, TYPE_LABELS, PRODUCT_LINE } from '../utils/constants';
 import { fmtDate, leadDays, leadLabel, leadMinutes, fmtMinutes, fmtLead, itemTotal, itemsLabel, projectSummary } from '../utils/helpers';
 
@@ -106,7 +107,7 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
                   {s.required.length > 0 && (
                     <div className="pd-req">
                       {s.required.map(r => (
-                        <span key={r.l} className={'pd-chk ' + r.s}>{r.s === 'done' ? '✓' : r.s === 'doing' ? '…' : '!'} {r.l}{r.s === 'none' && ' 없음'}{r.s === 'doing' && ' 진행 중'}</span>
+                        <span key={r.l} className={'pd-chk ' + r.s}><Icon name={r.s === 'done' ? 'check' : r.s === 'doing' ? 'clock' : 'urgent'} size={11} stroke={2.25} /> {r.l}{r.s === 'none' && ' 없음'}{r.s === 'doing' && ' 진행 중'}</span>
                       ))}
                     </div>
                   )}
@@ -146,7 +147,7 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
             </div>
             {byCat.map(r => (
               <div key={r.k} className="lt-row">
-                <span className="lt-cat">{CAT[r.k].i} {CAT[r.k].l}</span>
+                <span className="lt-cat"><Icon name={CAT[r.k].i} size={14} /> {CAT[r.k].l}</span>
                 <span>{r.n}건</span>
                 <span className="lt-lead">
                   <span className="lt-bar"><span style={{ width: Math.round((r.lead || 0) / maxLead * 100) + '%' }} /></span>
@@ -166,7 +167,7 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
           {Object.entries(EVENT_TYPE).map(([k, m]) => (
             <div key={k} className="act-i">
               <div className="act-num">{evCnt[k] || 0}</div>
-              <div className="act-lbl">{m.i} {m.l}</div>
+              <div className="act-lbl"><Icon name={m.i} size={13} /> {m.l}</div>
             </div>
           ))}
         </div>
@@ -179,7 +180,7 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
           {mo.map((v, i) => (
             <div key={i} className="bar-col">
               <div className="bar-val">{v}</div>
-              <div className="bar-fill" style={{ height: Math.round(v / mx * 100) + '%', background: '#4A7C6F' }} />
+              <div className="bar-fill" style={{ height: Math.round(v / mx * 100) + '%', background: v ? '#FF7A1A' : '#E3E3E3' }} />
               <div className="bar-lbl">{i + 1}월</div>
             </div>
           ))}
@@ -226,12 +227,12 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
                   <td style={{ fontWeight: 500, fontSize: 13 }}>{t.name}{t.asap && <span className="asap-tag">ASAP</span>}</td>
                   <td><span className={'bdg ' + cat.b}>{cat.l}</span>{TYPE_LABELS[t.cat] && TYPE_LABELS[t.cat][t.pkgType] && <span className="cw-sub">{TYPE_LABELS[t.cat][t.pkgType]}</span>}</td>
                   <td><span className={'bdg ' + tt[1]}>{tt[0]}</span></td>
-                  <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.reqDate)}</td>
-                  <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.doneDate)}</td>
+                  <td style={{ fontSize: 12, color: '#8A8A8A' }}>{fmtDate(t.reqDate)}</td>
+                  <td style={{ fontSize: 12, color: '#8A8A8A' }}>{fmtDate(t.doneDate)}</td>
                   <td style={{ fontWeight: 600 }}>{leadLabel(t)}</td>
                   <td><b>{itemTotal(t)}개</b>{itemsLabel(t) && <span className="cw-sub">{itemsLabel(t)}</span>}</td>
                   <td style={{ fontWeight: 600 }}>{t.ecnt || 0}회</td>
-                  <td style={{ fontSize: 11, color: '#9A9590' }}>{t.note ? t.note.slice(0, 20) + (t.note.length > 20 ? '…' : '') : ''}</td>
+                  <td style={{ fontSize: 11, color: '#8A8A8A' }}>{t.note ? t.note.slice(0, 20) + (t.note.length > 20 ? '…' : '') : ''}</td>
                 </tr>
               );
             })}

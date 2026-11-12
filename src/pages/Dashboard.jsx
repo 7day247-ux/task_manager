@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import Icon from '../components/Icon';
 import { STATUS, CAT } from '../utils/constants';
 import { fmtDate, pct, getDdayInfo, today, ymd, tenure, anniversary } from '../utils/helpers';
 
@@ -62,34 +63,34 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePa
           <button className="dg-out" onClick={onChangePassword}>비밀번호 변경</button>
           <button className="dg-out" onClick={onSignOut}>로그아웃</button>
         </div>
-        <div className="dg-hello">안녕하세요, Sunhee님! 👋</div>
+        <div className="dg-hello">안녕하세요, Sunhee님</div>
         {tenure() && (
           <div className="dg-tenure">
-            {anniversary(today()) ? '🎉 오늘은 ' + anniversary(today()) + '이에요 · ' : ''}
+            {anniversary(today()) && <span className="dg-anniv"><Icon name="party" size={13} /> 오늘은 {anniversary(today())}이에요</span>}
             입사 {tenure().days.toLocaleString()}일째{tenure().years > 0 ? ' · 만 ' + tenure().years + '년' : ''} · {tenure().years + 1}년차
           </div>
         )}
       </div>
 
       <div className="dc">
-        <DonutCard label="진행중 완료율" percent={p1} color="#4A7C6F"
+        <DonutCard label="진행중 완료율" percent={p1} color="#FF7A1A"
           desc={`진행중 ${inprog.length}건 평균`} onClick={() => onGoTaskFilter('inprogress')} />
-        <DonutCard label="홀드 비율" percent={p2} color="#EF9F27"
+        <DonutCard label="홀드 비율" percent={p2} color="#7A7A7A"
           desc={`전체 중 홀드 ${hold.length}건`} onClick={() => onGoTaskFilter('hold')} />
-        <DonutCard label="ASAP 처리율" percent={p3} color="#E24B4A"
+        <DonutCard label="ASAP 처리율" percent={p3} color="#111111"
           desc={`ASAP ${asapAll.length}건 중 ${asapDone.length}건 완료`} onClick={() => onGoTaskFilter('asap')} />
       </div>
 
       <div className="ds">
         <div className="ds-card">
-          <div className="ds-title">🔴 오늘 마감 &amp; ASAP</div>
+          <div className="ds-title"><Icon name="urgent" size={15} /> 오늘 마감 &amp; ASAP</div>
           {!todayT.length
-            ? <div className="ds-empty">오늘 마감 태스크가 없어요 🎉</div>
+            ? <div className="ds-empty">오늘 마감 태스크가 없어요</div>
             : todayT.map(t => <TaskRow key={t.id} task={t} />)
           }
         </div>
         <div className="ds-card">
-          <div className="ds-title">📅 이번 주 마감</div>
+          <div className="ds-title"><Icon name="week" size={15} /> 이번 주 마감</div>
           {!weekT.length
             ? <div className="ds-empty">이번 주 마감 태스크가 없어요</div>
             : weekT.map(t => <TaskRow key={t.id} task={t} />)
@@ -105,7 +106,7 @@ function TaskRow({ task }) {
   const dd  = getDdayInfo(task);
   return (
     <div className="ds-item">
-      <span style={{ fontSize: 14 }}>{cat.i}</span>
+      <span className="ds-ico"><Icon name={cat.i} size={15} /></span>
       <span className="ds-name">{task.name}</span>
       {task.asap
         ? <span className="asap-t" style={{ fontSize: 11 }}>ASAP</span>

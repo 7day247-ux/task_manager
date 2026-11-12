@@ -58,7 +58,7 @@ export default function Gallery({ images, projects, tasks, onReload, showToast }
 
       {shown.length
         ? <ImageGrid images={shown} caption={caption} onChanged={onReload} showToast={showToast} />
-        : <div className="empty-r" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#9A9590', fontSize: 13 }}>
+        : <div className="empty-r" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#8A8A8A', fontSize: 13 }}>
             {images.length ? '조건에 맞는 이미지가 없어요.' : '아직 올린 이미지가 없어요. 위에서 사진을 골라 올려보세요.'}
           </div>}
     </div>

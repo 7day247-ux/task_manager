@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Mark } from './Icon';
 import { signIn } from '../utils/auth';
 import EyeIcon from './EyeIcon';
 import SecretInput from './SecretInput';
@@ -29,7 +30,7 @@ export default function LockScreen({ onUnlock }) {
   return (
     <div className="lock">
       <form className="lock-box" onSubmit={submit}>
-        <div className="lock-logo">📋</div>
+        <div className="lock-logo"><Mark size={48} /></div>
         <div className="lock-title">업무 관리</div>
         <div className="lock-sub">로그인해주세요</div>
 
