@@ -65,7 +65,7 @@ export const MT_TYPE = {
 };
 
 export const PKG_LABELS = {
-  pkg: '패키지', outer: '외함', inner: '내함', can: '캔',
+  pkg: '패키지', ballcase: '볼케이스', outer: '외박스(외함)', inner: '내함', can: '캔',
   container: '용기', label: '라벨', sticker: '덧방스티커', etc: '기타',
 };
 
@@ -75,6 +75,15 @@ export const POSM_LABELS = {
 
 export const INHOUSE_LABELS = {
   support: '디자인 지원', doc: '사내 문서', etc: '기타',
+};
+
+// 제품군. 건과는 제품마다 볼케이스와 외박스가 필수다.
+export const PRODUCT_LINE = { dry: '건과', ice: '빙과' };
+
+// 작업 구성에서 한 번 눌러 추가하는 종류
+export const ITEM_SUGGEST = {
+  dry: ['버티컬', '삼방', '스탠딩', '볼케이스', '외박스'],
+  ice: ['바', '지펜슬', '콘', '튜브', '컵', '홈', '리드지'],
 };
 
 export const TYPE_LABELS = { pkg: PKG_LABELS, posm: POSM_LABELS, inhouse: INHOUSE_LABELS };

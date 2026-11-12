@@ -41,7 +41,7 @@ function AppInner() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
-    tasks, meetings, mtItems, leaves, events,
+    tasks, meetings, mtItems, leaves, events, projects,
     toast, showToast,
     loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
@@ -109,7 +109,7 @@ function AppInner() {
             <MeetingNotes meetings={meetings} mtItems={mtItems} tasks={tasks} onReload={reloadMeetings} showToast={showToast} />
           } />
           <Route path="/completed" element={
-            <CompletedWork tasks={tasks} events={events} onOpenTask={openTask} />
+            <CompletedWork tasks={tasks} events={events} projects={projects} onOpenTask={openTask} />
           } />
           <Route path="/reflection" element={
             <Reflection showToast={showToast} />
@@ -124,6 +124,7 @@ function AppInner() {
           task={taskModal.task}
           defaultCat={taskModal.defaultCat}
           tasks={tasks}
+          projects={projects}
           onClose={() => setTaskModal(null)}
           onSaved={async () => { await loadAll(); }}
           showToast={showToast}

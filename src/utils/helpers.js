@@ -101,6 +101,10 @@ export function toRow(d) {
     done_date: d.status === 'done' ? (d.doneDate || null) : null,
     req_time: d.reqTime || '',
     done_time: d.status === 'done' ? (d.doneTime || '') : '',
+    items: cleanItems(d.items),
+    proposal_count: d.proposalCount || 0,
+    final_type: d.finalType || '',
+    project_id: d.projectId || null,
   };
 }
 
@@ -124,6 +128,59 @@ export function mapTask(r) {
     doneDate: r.done_date || '',
     reqTime: r.req_time || '',
     doneTime: r.done_time || '',
+    items: cleanItems(r.items),
+    proposalCount: r.proposal_count || 0,
+    finalType: r.final_type || '',
+    projectId: r.project_id || null,
+  };
+}
+
+// 작업 구성: [{ name, count }] — 이름이 비었거나 수량이 0 이하인 줄은 버린다.
+export function cleanItems(v) {
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch { v = []; } }
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter(x => x && typeof x === 'object' && String(x.name || '').trim())
+    .map(x => ({ name: String(x.name).trim(), count: Math.max(1, parseInt(x.count) || 1) }));
+}
+
+// 작업물 수. 구성을 안 적은 태스크는 1개로 센다.
+export function itemTotal(task) {
+  const its = task.items || [];
+  return its.length ? its.reduce((s, x) => s + x.count, 0) : 1;
+}
+
+export function itemsLabel(task) {
+  return (task.items || []).map(x => x.name + ' ' + x.count).join(' · ');
+}
+
+function hasItem(list, pkgType, word) {
+  return list.find(t => t.pkgType === pkgType || (t.items || []).some(x => x.name.includes(word)) || t.name.includes(word));
+}
+
+// 제품(프로젝트) 단위 요약: 첫 요청일부터 마지막 완료일까지가 제품 리드타임이다.
+export function projectSummary(project, tasks) {
+  const list = tasks.filter(t => t.projectId === project.id);
+  if (!list.length) return null;
+  const reqs  = list.map(t => t.reqDate).filter(Boolean).sort();
+  const tasksDone = list.every(t => t.status === 'done');
+  const dones = list.map(t => t.doneDate).filter(Boolean).sort();
+  const start = reqs[0] || '';
+  const state = t => !t ? 'none' : t.status === 'done' ? 'done' : 'doing';
+  // 건과 신제품은 볼케이스와 외박스까지 끝나야 제품이 끝난 것으로 본다.
+  const required = project.line === 'dry' && project.kind !== 'renewal'
+    ? [{ l: '볼케이스', s: state(hasItem(list, 'ballcase', '볼케이스')) }, { l: '외박스', s: state(hasItem(list, 'outer', '외박스') || hasItem(list, 'outer', '외함')) }]
+    : [];
+  const allDone = tasksDone && required.every(r => r.s === 'done');
+  const end = allDone && dones.length ? dones[dones.length - 1] : '';
+  return {
+    project, list, start, end, allDone, required,
+    lead: start ? leadDays({ reqDate: start, doneDate: end || today() }) : null,
+    doneCount: list.filter(t => t.status === 'done').length,
+    pieces: list.reduce((s, t) => s + itemTotal(t), 0),
+    proposals: list.reduce((s, t) => s + (t.proposalCount || 0), 0),
+    edits: list.reduce((s, t) => s + (t.ecnt || 0), 0),
+    finalType: (list.find(t => t.finalType) || {}).finalType || '',
   };
 }
 
@@ -223,7 +280,7 @@ export function printTasksHtml(tasks, mode) {
     html += `<table style="width:100%;border-collapse:collapse;font-size:10px;">
       <thead><tr>
         <th style="${thS}">프로젝트명</th><th style="${thS}">유형</th>
-        <th style="${thS}">타입</th><th style="${thS}">수정횟수</th>
+        <th style="${thS}">타입</th><th style="${thS}">작업물</th><th style="${thS}">수정횟수</th>
         <th style="${thS}">요청일</th><th style="${thS}">완료일</th>
         <th style="${thS}">리드타임</th><th style="${thS}">비고</th>
       </tr></thead><tbody>`;
@@ -233,6 +290,7 @@ export function printTasksHtml(tasks, mode) {
         <td style="${tdS}font-weight:600;">${t.name}</td>
         <td style="${tdS}">${cat.l}</td>
         <td style="${tdS}">${t.ttype === 'edit' ? '수정' : '신규'}</td>
+        <td style="${tdS}">${itemTotal(t)}개${itemsLabel(t) ? ' (' + itemsLabel(t) + ')' : ''}</td>
         <td style="${tdS}text-align:center;">${t.ecnt || 0}회</td>
         <td style="${tdS}">${fmtDate(t.reqDate)}</td>
         <td style="${tdS}">${fmtDate(t.doneDate)}</td>
