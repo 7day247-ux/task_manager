@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { signIn } from '../utils/auth';
+import EyeIcon from './EyeIcon';
 
 export default function LockScreen({ onUnlock }) {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export default function LockScreen({ onUnlock }) {
             onChange={e => { setEmail(e.target.value); setErr(''); }}
           />
           <button type="button" className="lock-eye" tabIndex={-1}
-            onClick={() => setShowEmail(v => !v)}>{showEmail ? '🙈' : '👁️'}</button>
+            onClick={() => setShowEmail(v => !v)}><EyeIcon show={showEmail} /></button>
         </div>
 
         <div className="lock-field">
@@ -56,7 +57,7 @@ export default function LockScreen({ onUnlock }) {
             onChange={e => { setPw(e.target.value); setErr(''); }}
           />
           <button type="button" className="lock-eye" tabIndex={-1}
-            onClick={() => setShowPw(v => !v)}>{showPw ? '🙈' : '👁️'}</button>
+            onClick={() => setShowPw(v => !v)}><EyeIcon show={showPw} /></button>
         </div>
 
         <div className="lock-err">{err}</div>

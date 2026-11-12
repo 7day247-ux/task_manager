@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { signIn, updatePassword, getEmail } from '../utils/auth';
+import EyeIcon from './EyeIcon';
 
 export default function ChangePasswordModal({ onClose, showToast }) {
   const email = getEmail();
@@ -48,7 +49,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
                 <input className="lock-inp" type={showCur ? 'text' : 'password'}
                   value={curPw} onChange={e => setCurPw(e.target.value)} autoFocus />
                 <button type="button" className="lock-eye" tabIndex={-1}
-                  onClick={() => setShowCur(v => !v)}>{showCur ? '🙈' : '👁️'}</button>
+                  onClick={() => setShowCur(v => !v)}><EyeIcon show={showCur} /></button>
               </div>
             </div>
             <div className="pwm-grp">
@@ -57,7 +58,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
                 <input className="lock-inp" type={showNew ? 'text' : 'password'}
                   value={newPw} onChange={e => setNewPw(e.target.value)} />
                 <button type="button" className="lock-eye" tabIndex={-1}
-                  onClick={() => setShowNew(v => !v)}>{showNew ? '🙈' : '👁️'}</button>
+                  onClick={() => setShowNew(v => !v)}><EyeIcon show={showNew} /></button>
               </div>
             </div>
             <div className="pwm-grp">
