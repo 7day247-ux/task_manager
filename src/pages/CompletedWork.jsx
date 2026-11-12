@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { CAT, EVENT_TYPE } from '../utils/constants';
-import { fmtDate, leadDays, fmtLead } from '../utils/helpers';
+import { CAT, EVENT_TYPE, TYPE_LABELS } from '../utils/constants';
+import { fmtDate, leadDays, leadLabel, leadMinutes, fmtMinutes } from '../utils/helpers';
 
 const FILTERS = [
   { id: 'all', label: '전체' },
@@ -34,6 +34,9 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
   const asapTasks = f.filter(t => t.asap);
   const asapLeads = asapTasks.map(leadDays).filter(v => v !== null);
   const normLeads = f.filter(t => !t.asap).map(leadDays).filter(v => v !== null);
+  const sameDay    = f.filter(t => leadDays(t) === 0);
+  const sameDayMin = sameDay.map(leadMinutes).filter(v => v !== null);
+  const sameDayAvg = sameDayMin.length ? Math.round(sameDayMin.reduce((a, b) => a + b, 0) / sameDayMin.length) : null;
   const totalEdits = f.reduce((s, t) => s + (t.ecnt || 0), 0);
   const avgEdits   = f.length ? Math.round(totalEdits / f.length * 10) / 10 : 0;
   const editTasks  = f.filter(t => t.ttype === 'edit').length;
@@ -65,8 +68,9 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
       {/* Summary Cards */}
       <div className="sg">
         <StatCard num={f.length} label="완료 건수" sub={'신규 ' + (f.length - editTasks) + ' · 수정 ' + editTasks} />
-        <StatCard num={fmtAvg(avg(leads))} label="평균 리드타임" sub="요청일 → 완료일" />
+        <StatCard num={fmtAvg(avg(leads))} label="평균 리드타임" sub="근무일 기준" />
         <StatCard num={fmtAvg(avg(asapLeads))} label="ASAP 평균 리드타임" sub={'ASAP ' + asapTasks.length + '건 · 일반 ' + fmtAvg(avg(normLeads))} />
+        <StatCard num={sameDay.length + '건'} label="당일 처리" sub={sameDayAvg !== null ? '평균 ' + fmtMinutes(sameDayAvg) : '시간 기록 없음'} />
         <StatCard num={avgEdits + '회'} label="평균 수정 횟수" sub={'총 ' + totalEdits + '회'} />
       </div>
 
@@ -157,11 +161,11 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
               return (
                 <tr key={t.id} className="row" onClick={() => onOpenTask(t.id)}>
                   <td style={{ fontWeight: 500, fontSize: 13 }}>{t.name}{t.asap && <span className="asap-tag">ASAP</span>}</td>
-                  <td><span className={'bdg ' + cat.b}>{cat.l}</span></td>
+                  <td><span className={'bdg ' + cat.b}>{cat.l}</span>{TYPE_LABELS[t.cat] && TYPE_LABELS[t.cat][t.pkgType] && <span className="cw-sub">{TYPE_LABELS[t.cat][t.pkgType]}</span>}</td>
                   <td><span className={'bdg ' + tt[1]}>{tt[0]}</span></td>
                   <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.reqDate)}</td>
                   <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.doneDate)}</td>
-                  <td style={{ fontWeight: 600 }}>{fmtLead(leadDays(t))}</td>
+                  <td style={{ fontWeight: 600 }}>{leadLabel(t)}</td>
                   <td style={{ fontWeight: 600 }}>{t.ecnt || 0}회</td>
                   <td style={{ fontSize: 11, color: '#9A9590' }}>{t.note ? t.note.slice(0, 40) + (t.note.length > 40 ? '…' : '') : ''}</td>
                 </tr>
@@ -188,7 +192,7 @@ export default function CompletedWork({ tasks, events = [], onOpenTask }) {
                 {t.asap && <span className="asap-tag">ASAP</span>}
               </div>
               <div className="cw-card-nums">
-                <span>리드타임 <b>{fmtLead(leadDays(t))}</b></span>
+                <span>리드타임 <b>{leadLabel(t)}</b></span>
                 <span>수정 <b>{t.ecnt || 0}회</b></span>
               </div>
             </div>

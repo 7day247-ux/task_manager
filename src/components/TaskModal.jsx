@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CAT, TYPE_LABELS } from '../utils/constants';
-import { api, getSteps, isCustomCat, toRow, leadDays, fmtLead, today } from '../utils/helpers';
+import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL } from '../utils/constants';
+import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
 
 const INIT_TASK = {
   name: '', cat: 'pkg', reqDate: '', dueDate: '', asap: false,
-  status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [], doneDate: '',
+  status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [], doneDate: '', reqTime: '', doneTime: '',
 };
 
 export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, showToast }) {
@@ -19,6 +19,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
         name: task.name, cat: task.cat, reqDate: task.reqDate, dueDate: task.dueDate,
         asap: task.asap, status: task.status, note: task.note, ttype: task.ttype,
         pkgType: task.pkgType, ecnt: task.ecnt, steps: task.steps, doneDate: task.doneDate || '',
+        reqTime: task.reqTime || '', doneTime: task.doneTime || '',
       });
       setCtrVal(task.ecnt || 0);
       if (isCustomCat(task.cat)) {
@@ -114,6 +115,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       ttype: form.ttype, ecnt: ctrVal,
       pkgType: form.pkgType,
       doneDate: form.status === 'done' ? (form.doneDate || today()) : '',
+      reqTime: form.reqTime, doneTime: form.doneTime,
     };
     onClose();
     showToast('저장 중...');
@@ -148,7 +150,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
     const data = {
       name: task.name + ' (복사)', cat: task.cat, reqDate: today(),
       dueDate: '', asap: false, status: 'waiting', steps: sc,
-      note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '', doneDate: '',
+      note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '', doneDate: '', reqTime: '', doneTime: '',
     };
     try {
       await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
@@ -217,7 +219,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
 
           {TYPE_LABELS[form.cat] && (
             <div className="fg">
-              <label className="fl">{form.cat === 'posm' ? 'POSM 종류' : '패키지 형태'}</label>
+              <label className="fl">{TYPE_FIELD_LABEL[form.cat]}</label>
               <select className="fs" value={form.pkgType} onChange={e => set('pkgType', e.target.value)}>
                 <option value="">선택 안함</option>
                 {Object.entries(TYPE_LABELS[form.cat]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -227,8 +229,11 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
 
           <div className="two">
             <div className="fg">
-              <label className="fl">요청일</label>
-              <input className="fi" type="date" value={form.reqDate} onChange={e => set('reqDate', e.target.value)} />
+              <label className="fl">요청일 · 시간(선택)</label>
+              <div className="dt-row">
+                <input className="fi" type="date" value={form.reqDate} onChange={e => set('reqDate', e.target.value)} />
+                <input className="fi fi-time" type="time" value={form.reqTime} onChange={e => set('reqTime', e.target.value)} />
+              </div>
             </div>
             <div className="fg">
               <label className="fl">기한</label>
@@ -258,11 +263,13 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
           {form.status === 'done' && (
             <div className="fg">
               <label className="fl">완료일 (최종 데이터 이관일)</label>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <input className="fi" type="date" value={form.doneDate} style={{ flex: 1 }}
+              <div className="dt-row">
+                <input className="fi" type="date" value={form.doneDate}
                   onChange={e => set('doneDate', e.target.value)} />
-                <span className="lead-chip">리드타임 {fmtLead(leadDays(form))}</span>
+                <input className="fi fi-time" type="time" value={form.doneTime} onChange={e => set('doneTime', e.target.value)} />
+                <span className="lead-chip">리드타임 {leadLabel(form)}</span>
               </div>
+              <div className="fhint">리드타임은 주말·공휴일을 뺀 근무일 기준이에요. 당일에 끝난 일은 시간을 적으면 소요 시간으로 보여요.</div>
             </div>
           )}
 
