@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL } from '../utils/constants';
+import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL, ITEM_SUGGEST, POSM_LABELS, PRODUCT_LINE } from '../utils/constants';
 import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
 
 const INIT_TASK = {
   name: '', cat: 'pkg', reqDate: '', dueDate: '', asap: false,
   status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [], doneDate: '', reqTime: '', doneTime: '',
+  items: [], proposalCount: 0, finalType: '', projectId: null,
 };
 
-export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, showToast }) {
+export default function TaskModal({ task, tasks, projects = [], defaultCat, onClose, onSaved, showToast }) {
   const isEdit = !!task;
   const [form, setForm]     = useState(() => (!task && defaultCat ? { ...INIT_TASK, cat: defaultCat } : INIT_TASK));
   const [csteps, setCsteps] = useState([]);
   const [ctrVal, setCtrVal] = useState(0);
+  const [newProjects, setNewProjects] = useState([]);
+  const [np, setNp] = useState(null); // 새 제품 입력 중일 때 { name, line, kind }
 
   useEffect(() => {
     if (task) {
@@ -20,6 +23,8 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
         asap: task.asap, status: task.status, note: task.note, ttype: task.ttype,
         pkgType: task.pkgType, ecnt: task.ecnt, steps: task.steps, doneDate: task.doneDate || '',
         reqTime: task.reqTime || '', doneTime: task.doneTime || '',
+        items: task.items || [], proposalCount: task.proposalCount || 0,
+        finalType: task.finalType || '', projectId: task.projectId || null,
       });
       setCtrVal(task.ecnt || 0);
       if (isCustomCat(task.cat)) {
@@ -43,6 +48,50 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
   const isCust   = isCustomCat(form.cat);
   const showEdit  = form.cat !== 'project';
   const showVari  = form.cat !== 'project';
+
+  // ── 작업 구성 (종류 + 개수) ──
+  const allProjects = [...projects, ...newProjects];
+  const curProject  = allProjects.find(p => p.id === form.projectId);
+  const suggest = form.cat === 'general' ? []
+    : form.cat === 'posm' ? Object.values(POSM_LABELS).filter(v => v !== '기타')
+    : curProject && ITEM_SUGGEST[curProject.line] ? ITEM_SUGGEST[curProject.line]
+    : [...ITEM_SUGGEST.dry, ...ITEM_SUGGEST.ice];
+  const itemSum = form.items.reduce((s, x) => s + x.count, 0);
+
+  function addItem(name) {
+    name = (name || '').trim();
+    if (!name) return;
+    setForm(f => {
+      const i = f.items.findIndex(x => x.name === name);
+      const items = i >= 0
+        ? f.items.map((x, j) => j === i ? { ...x, count: x.count + 1 } : x)
+        : [...f.items, { name, count: 1 }];
+      return { ...f, items };
+    });
+  }
+
+  function bumpItem(i, d) {
+    setForm(f => {
+      const items = f.items.map((x, j) => j === i ? { ...x, count: x.count + d } : x).filter(x => x.count > 0);
+      const finalType = items.some(x => x.name === f.finalType) ? f.finalType : '';
+      return { ...f, items, finalType };
+    });
+  }
+
+  async function createProject() {
+    if (!np || !np.name.trim()) return;
+    try {
+      const rows = await api('projects', {
+        method: 'POST', headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ name: np.name.trim(), kind: np.kind, line: np.line, status: 'active' }),
+      });
+      if (rows && rows[0]) {
+        setNewProjects(prev => [...prev, rows[0]]);
+        set('projectId', rows[0].id);
+      }
+      setNp(null);
+    } catch (e) { showToast('제품 추가 실패: ' + e.message, true); }
+  }
 
   function getStepObj(i) {
     const v = csteps[i];
@@ -116,6 +165,8 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       pkgType: form.pkgType,
       doneDate: form.status === 'done' ? (form.doneDate || today()) : '',
       reqTime: form.reqTime, doneTime: form.doneTime,
+      items: form.items, proposalCount: form.proposalCount,
+      finalType: form.finalType, projectId: form.projectId,
     };
     onClose();
     showToast('저장 중...');
@@ -151,6 +202,7 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
       name: task.name + ' (복사)', cat: task.cat, reqDate: today(),
       dueDate: '', asap: false, status: 'waiting', steps: sc,
       note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '', doneDate: '', reqTime: '', doneTime: '',
+      items: task.items || [], proposalCount: 0, finalType: '', projectId: task.projectId || null,
     };
     try {
       await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
@@ -217,6 +269,43 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
             </div>
           </div>
 
+          {form.cat !== 'general' && (
+            <div className="fg">
+              <label className="fl">제품 (선택)</label>
+              <div className="dt-row">
+                <select className="fs" style={{ flex: 1, minWidth: 0 }} value={form.projectId || ''}
+                  onChange={e => set('projectId', e.target.value ? parseInt(e.target.value) : null)}>
+                  <option value="">연결 안함</option>
+                  {allProjects.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}{PRODUCT_LINE[p.line] ? ' · ' + PRODUCT_LINE[p.line] : ''}</option>
+                  ))}
+                </select>
+                {!np && <button type="button" className="btn btn-sm" onClick={() => setNp({ name: '', line: 'dry', kind: 'new' })}>+ 새 제품</button>}
+              </div>
+              {np && (
+                <div className="np-box">
+                  <input className="fi" placeholder="제품명" value={np.name} autoFocus
+                    onChange={e => setNp({ ...np, name: e.target.value })}
+                    onKeyDown={e => { if (e.key === 'Enter') createProject(); }} />
+                  <div className="dt-row">
+                    <select className="fs" style={{ flex: 1 }} value={np.line} onChange={e => setNp({ ...np, line: e.target.value })}>
+                      <option value="dry">건과</option>
+                      <option value="ice">빙과</option>
+                      <option value="">기타</option>
+                    </select>
+                    <select className="fs" style={{ flex: 1 }} value={np.kind} onChange={e => setNp({ ...np, kind: e.target.value })}>
+                      <option value="new">신제품</option>
+                      <option value="renewal">리뉴얼</option>
+                    </select>
+                    <button type="button" className="btn btn-sm" onClick={() => setNp(null)}>취소</button>
+                    <button type="button" className="btn btn-sm btn-p" onClick={createProject}>추가</button>
+                  </div>
+                </div>
+              )}
+              <div className="fhint">같은 제품의 파우치·볼케이스·외박스를 묶어두면 완료 현황에서 제품 1개의 리드타임으로 볼 수 있어요.</div>
+            </div>
+          )}
+
           {TYPE_LABELS[form.cat] && (
             <div className="fg">
               <label className="fl">{TYPE_FIELD_LABEL[form.cat]}</label>
@@ -270,6 +359,52 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
                 <span className="lead-chip">리드타임 {leadLabel(form)}</span>
               </div>
               <div className="fhint">리드타임은 주말·공휴일을 뺀 근무일 기준이에요. 당일에 끝난 일은 시간을 적으면 소요 시간으로 보여요.</div>
+            </div>
+          )}
+
+          <div className="fg">
+            <label className="fl">작업 구성 {form.items.length > 0 && <span className="it-sum">총 {itemSum}개</span>}</label>
+            {form.items.length > 0 && (
+              <div className="it-list">
+                {form.items.map((it, i) => (
+                  <div className="it-row" key={it.name}>
+                    <span className="it-name">{it.name}</span>
+                    <button type="button" className="ctr-btn it-btn" onClick={() => bumpItem(i, -1)}>−</button>
+                    <span className="it-cnt">{it.count}</span>
+                    <button type="button" className="ctr-btn it-btn" onClick={() => bumpItem(i, 1)}>+</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {suggest.length > 0 && (
+              <div className="it-sug">
+                {suggest.map(s => <button type="button" key={s} className="chip" onClick={() => addItem(s)}>+ {s}</button>)}
+              </div>
+            )}
+            <ItemInput onAdd={addItem} />
+            <div className="fhint">한 요청에서 만든 종류와 개수예요. 누를 때마다 1개씩 늘어나요. 비워두면 1개로 세요.</div>
+          </div>
+
+          {form.cat !== 'general' && (
+            <div className="two">
+              <div className="fg">
+                <label className="fl">제안 시안 수</label>
+                <div className="ctr">
+                  <button type="button" className="ctr-btn" onClick={() => set('proposalCount', Math.max(0, form.proposalCount - 1))}>−</button>
+                  <div className="ctr-num">{form.proposalCount}</div>
+                  <button type="button" className="ctr-btn" onClick={() => set('proposalCount', form.proposalCount + 1)}>+</button>
+                  <span style={{ fontSize: 12, color: '#9A9590' }}>안 · 처음 제안한 시안</span>
+                </div>
+              </div>
+              {form.cat === 'pkg' && form.items.length > 0 && (
+                <div className="fg">
+                  <label className="fl">최종 확정 타입</label>
+                  <select className="fs" value={form.finalType} onChange={e => set('finalType', e.target.value)}>
+                    <option value="">아직 미정</option>
+                    {form.items.map(it => <option key={it.name} value={it.name}>{it.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
@@ -339,6 +474,20 @@ export default function TaskModal({ task, tasks, defaultCat, onClose, onSaved, s
           <button className="btn btn-p" onClick={save}>저장</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ItemInput({ onAdd }) {
+  const [val, setVal] = useState('');
+  const add = () => { onAdd(val); setVal(''); };
+  return (
+    <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+      <input className="fi" placeholder="목록에 없으면 직접 입력" value={val}
+        style={{ flex: 1, fontSize: 12, padding: '6px 8px' }}
+        onChange={e => setVal(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }} />
+      <button type="button" className="btn btn-sm" onClick={add}>추가</button>
     </div>
   );
 }
