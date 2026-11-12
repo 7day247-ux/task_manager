@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { STATUS, CAT } from '../utils/constants';
-import { fmtDate, pct, getDdayInfo } from '../utils/helpers';
+import { fmtDate, pct, getDdayInfo, today, ymd } from '../utils/helpers';
 
 function DonutCard({ id, label, percent, color, desc, onClick }) {
   const fillRef = useRef(null);
@@ -47,12 +47,12 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePa
   const p2 = active.length ? Math.round(hold.length / active.length * 100) : 0;
   const p3 = asapAll.length ? Math.round(asapDone.length / asapAll.length * 100) : 0;
 
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = today();
   const todayT = tasks.filter(t => (t.dueDate === todayStr || t.asap) && t.status !== 'done');
   const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + (6 - now.getDay()));
   const weekT = tasks.filter(t => {
     if (!t.dueDate || t.status === 'done') return false;
-    return t.dueDate >= todayStr && t.dueDate <= weekEnd.toISOString().slice(0, 10);
+    return t.dueDate >= todayStr && t.dueDate <= ymd(weekEnd);
   }).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   return (

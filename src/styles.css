@@ -344,6 +344,24 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .scard-num{font-size:26px;font-weight:700;margin-bottom:4px;color:#1C1A16;}
 .scard-lbl{font-size:11px;color:#9A9590;}
 .scard-sub{font-size:11px;color:#9A9590;margin-top:2px;}
+.lead-chip{font-size:12px;font-weight:600;color:#2A7A5A;background:#E8F5EE;padding:6px 10px;border-radius:8px;white-space:nowrap;}
+.asap-tag{display:inline-block;font-size:10px;font-weight:700;color:#B5403F;background:#FDECEC;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
+.lt-tbl{margin-top:10px;}
+.lt-row{display:grid;grid-template-columns:minmax(0,1.2fr) 56px minmax(0,2fr) 72px;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #F0EDE6;font-size:13px;color:#1C1A16;}
+.lt-row:last-child{border-bottom:none;}
+.lt-hd{font-size:11px;color:#9A9590;padding-top:0;}
+.lt-cat{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lt-lead{display:flex;align-items:center;gap:10px;}
+.lt-lead b{white-space:nowrap;min-width:44px;}
+.lt-bar{flex:1;height:6px;background:#F0EDE6;border-radius:3px;overflow:hidden;}
+.lt-bar span{display:block;height:100%;background:#4A7C6F;border-radius:3px;}
+.cw-cards{display:none;}
+.cw-card{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;}
+.cw-card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.cw-card-name{font-size:14px;font-weight:600;color:#1C1A16;}
+.cw-card-meta{font-size:12px;color:#9A9590;margin-bottom:8px;}
+.cw-card-nums{display:flex;gap:16px;font-size:12px;color:#5F5E5A;}
+.cw-card-nums b{color:#1C1A16;font-size:14px;}
 .bar-sec{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .bar-ttl{font-size:13px;font-weight:600;margin-bottom:16px;color:#1C1A16;}
 .bar-wrap{display:flex;align-items:flex-end;gap:8px;height:120px;}
@@ -414,6 +432,12 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 
   /* 모바일 탭바 */
   .dg-out{display:inline-block;}
+  .cw-table{display:none;}
+  .act-row{grid-template-columns:repeat(3,1fr);row-gap:14px;}
+  .bar-lbl{white-space:nowrap;font-size:9px;letter-spacing:-.5px;}
+  .cw-cards{display:block;}
+  .lt-row{grid-template-columns:minmax(0,1.3fr) 40px minmax(0,1.5fr) 48px;gap:6px;font-size:12px;}
+  .scard-num{font-size:22px;}
   .mobile-tabbar{
     display:flex;
     position:fixed;

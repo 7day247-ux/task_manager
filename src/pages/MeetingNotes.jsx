@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { MT_TYPE } from '../utils/constants';
 import MeetingModal from '../components/MeetingModal';
+import { today } from '../utils/helpers';
 
 export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showToast }) {
   const [search, setSearch] = useState('');
   const [editMeeting, setEditMeeting] = useState(undefined); // undefined = closed, null = new, obj = edit
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = today();
 
   function printMtDate(ds) {
     ds = String(ds).trim();

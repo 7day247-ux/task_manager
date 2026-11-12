@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../utils/helpers';
+import { api, today } from '../utils/helpers';
 
 function emptyRow() {
   return { id: null, title: '', content: '', tags: '', due_date: '', assignee: '', task_id: null };
@@ -25,7 +25,7 @@ export default function MeetingModal({ meeting, mtItems, tasks, onClose, onSaved
         : [emptyRow()]
       );
     } else {
-      setDate(new Date().toISOString().slice(0, 10));
+      setDate(today());
       setType('meeting'); setTitle(''); setAtt('');
       setMRows([emptyRow()]);
     }

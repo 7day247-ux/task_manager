@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MOODS, REFLECTION_TAGS } from '../utils/constants';
-import { api } from '../utils/helpers';
+import { api, today } from '../utils/helpers';
 
 const EMPTY = {
   entry_date: '',
@@ -28,7 +28,7 @@ export default function ReflectionModal({ entry, onClose, onSaved, showToast }) 
         tags: entry.tags ? entry.tags.split(',').filter(Boolean) : [],
       });
     } else {
-      setForm({ ...EMPTY, entry_date: new Date().toISOString().slice(0, 10) });
+      setForm({ ...EMPTY, entry_date: today() });
     }
   }, [entry]);
 
