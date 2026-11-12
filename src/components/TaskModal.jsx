@@ -28,7 +28,7 @@ export default function TaskModal({ task, tasks, projects = [], defaultCat, onCl
       });
       setCtrVal(task.ecnt || 0);
       if (isCustomCat(task.cat)) {
-        setCsteps(task.steps.filter(x => x && typeof x === 'object').map(x => ({ name: x.name, done: x.done })));
+        setCsteps(task.steps.filter(x => x && typeof x === 'object' && x.name).map(x => ({ name: x.name, done: x.done })));
       } else {
         setCsteps(task.steps.map(v => {
           if (v && typeof v === 'object' && !Array.isArray(v)) return v;
@@ -148,12 +148,12 @@ export default function TaskModal({ task, tasks, projects = [], defaultCat, onCl
     if (form.ttype === 'edit') {
       steps = [];
     } else if (isCust) {
-      steps = csteps.filter(x => x && typeof x === 'object');
+      steps = csteps.filter(x => x && typeof x === 'object' && x.name);
     } else {
       const padded = [...csteps];
       while (padded.length < sArr.length) padded.push(0);
       steps = padded.slice(0, sArr.length).map(v => {
-        if (v && typeof v === 'object' && !Array.isArray(v)) return v;
+        if (v && typeof v === 'object' && !Array.isArray(v)) return { done: !!v.done, dates: v.dates || [] };
         return { done: !!v, dates: [] };
       });
     }

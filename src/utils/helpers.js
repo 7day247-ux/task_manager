@@ -58,7 +58,7 @@ export function curStep(task) {
   if (isCustomCat(task.cat)) {
     const items = task.steps.filter(x => x && typeof x === 'object');
     const undone = items.filter(x => !x.done);
-    return undone.length ? undone[0].name : items.length ? '완료' : '할 일 없음';
+    return undone.length ? (undone[0].name || '') : items.length ? '완료' : '할 일 없음';
   }
   const steps = getSteps(task.cat);
   const idx = task.steps.findIndex(v => !v || (typeof v === 'object' && !v.done));
@@ -112,6 +112,10 @@ export function mapTask(r) {
   let s = r.steps;
   if (typeof s === 'string') { try { s = JSON.parse(s); } catch { s = []; } }
   if (!Array.isArray(s)) s = [];
+  // 사내 디자인·POSM·프로젝트·일반은 이름이 있는 체크리스트만 쓴다.
+  // 카테고리를 바꾸면서 패키지식 단계({done, dates})가 남은 경우 걸러낸다.
+  const cat = r.type || 'general';
+  if (isCustomCat(cat)) s = s.filter(x => x && typeof x === 'object' && x.name);
   return {
     id: r.id,
     name: r.name,

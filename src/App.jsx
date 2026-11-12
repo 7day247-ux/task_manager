@@ -12,6 +12,7 @@ import Calendar from './pages/Calendar';
 import MeetingNotes from './pages/MeetingNotes';
 import CompletedWork from './pages/CompletedWork';
 import Reflection from './pages/Reflection';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useAppData } from './hooks/useAppData';
 import { printTasksHtml } from './utils/helpers';
 
@@ -95,6 +96,7 @@ function AppInner() {
       <Sidebar curPage={curPage} onNav={goPage} onPrint={printCurrent} onSignOut={handleSignOut} onChangePassword={() => setPwModalOpen(true)} />
 
       <div className="main show">
+        <ErrorBoundary resetKey={location.pathname}>
         <Routes>
           <Route path="/" element={
             <Dashboard tasks={tasks} onGoTaskFilter={goTaskFilter} onSignOut={handleSignOut} onChangePassword={() => setPwModalOpen(true)} />
@@ -117,6 +119,7 @@ function AppInner() {
           {/* 알 수 없는 경로는 대시보드로 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </div>
 
       {taskModal !== null && (
