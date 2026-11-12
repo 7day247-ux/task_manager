@@ -53,6 +53,7 @@ export const EVENT_TYPE = {
   trip:    { l: '출장', i: '🧳', bg: '#E8F5EE', fg: '#2A7A5A' },
   audit:   { l: '감리', i: '🖨️', bg: '#FDECEC', fg: '#B5403F' },
   shoot:   { l: '촬영', i: '📷', bg: '#E6F1FB', fg: '#185FA5' },
+  dinner:  { l: '회식', i: '🍻', bg: '#F5F0E1', fg: '#8A6D1F' },
 };
 
 export const MT_TYPE = {

@@ -22,6 +22,17 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
   const [evType, setEvType]   = useState('meeting');
   const [evTitle, setEvTitle] = useState('');
   const [evBusy, setEvBusy]   = useState(false);
+  const [evStart, setEvStart] = useState('');
+  const [evEnd, setEvEnd]     = useState('');
+  const [evEditId, setEvEditId] = useState(null);
+
+  function resetEvForm() { setEvTitle(''); setEvStart(''); setEvEnd(''); setEvEditId(null); }
+  function selectDay(ds) { if (ds !== calSel) resetEvForm(); setCalSel(ds); }
+  function startEdit(ev) {
+    setEvEditId(ev.id); setEvType(ev.event_type); setEvTitle(ev.title || '');
+    setEvStart(ev.start_time || ''); setEvEnd(ev.end_time || '');
+  }
+  const evTime = e => e.start_time ? e.start_time + (e.end_time ? '–' + e.end_time : '') : '';
 
   const todayStr = now.toISOString().slice(0, 10);
 
@@ -34,7 +45,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
 
   function goToday() {
     setCalY(now.getFullYear()); setCalM(now.getMonth());
-    setCalSel(todayStr);
+    selectDay(todayStr);
   }
 
   const filtered = tasks.filter(t => calF === 'all' || t.status === calF);
@@ -52,6 +63,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
 
   const evByDate = {};
   events.forEach(e => { (evByDate[e.event_date] = evByDate[e.event_date] || []).push(e); });
+  Object.values(evByDate).forEach(l => l.sort((a, b) => (a.start_time || '99').localeCompare(b.start_time || '99')));
   const moKey = calY + '-' + pad(calM + 1);
   const moCnt = {};
   events.forEach(e => { if (String(e.event_date).slice(0, 7) === moKey) moCnt[e.event_type] = (moCnt[e.event_type] || 0) + 1; });
@@ -60,8 +72,11 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
     if (!calSel || evBusy) return;
     setEvBusy(true);
     try {
-      await api('events', { method: 'POST', body: JSON.stringify({ event_date: calSel, event_type: evType, title: evTitle.trim() }) });
-      setEvTitle('');
+      if (evStart && evEnd && evEnd < evStart) { showToast('종료 시간이 시작 시간보다 빨라요.', true); setEvBusy(false); return; }
+      const body = JSON.stringify({ event_date: calSel, event_type: evType, title: evTitle.trim(), start_time: evStart, end_time: evStart ? evEnd : '' });
+      if (evEditId) await api('events?id=eq.' + evEditId, { method: 'PATCH', body });
+      else await api('events', { method: 'POST', body });
+      resetEvForm();
       await onReloadEvents();
     } catch (e) { showToast('일정 저장 실패: ' + e.message, true); }
     setEvBusy(false);
@@ -71,6 +86,7 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
     if (!confirm('이 일정을 삭제할까요?')) return;
     try {
       await api('events?id=eq.' + ev.id, { method: 'DELETE' });
+      if (evEditId === ev.id) resetEvForm();
       await onReloadEvents();
     } catch (e) { showToast('삭제 실패: ' + e.message, true); }
   }
@@ -174,19 +190,26 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
             if (leaveAmt > 0 && !oth) cls += ' has-leave';
 
             return (
-              <div key={i} className={cls} onClick={() => { setCalSel(ds); }}>
+              <div key={i} className={cls} onClick={() => selectDay(ds)}>
                 <div className="dn">{dn}</div>
                 {holiday && !oth && <div className="cal-holiday-lbl">{holiday}</div>}
                 {leaveAmt > 0 && !oth && <div className="cal-leave-lbl">연차 {leaveAmt}일</div>}
                 {evs.slice(0, 2).map(e => {
                   const m = EVENT_TYPE[e.event_type] || EVENT_TYPE.meeting;
-                  return <div key={'e' + e.id} className="cal-ev" style={{ background: m.bg, color: m.fg }}>{m.l}{e.title ? ' ' + e.title.slice(0, 6) : ''}</div>;
+                  return (
+                    <div key={'e' + e.id} className="cal-ev is-ev" style={{ background: m.bg, color: m.fg }}>
+                      <span className="cal-ev-tag">{m.l}</span>
+                      {e.start_time && <span className="cal-ev-time">{e.start_time}</span>}
+                      <span className="cal-ev-txt">{e.title}</span>
+                    </div>
+                  );
                 })}
                 {evs.length > 2 && <div className="cal-more">+{evs.length - 2}</div>}
                 {(!isWeekend || oth) && ents.slice(0, 2).map((t, ei) => (
-                  <div key={ei} className={'cal-ev ' + (t.status === 'done' ? 'done' : t.status)}
+                  <div key={ei} className={'cal-ev is-task ' + (t.status === 'done' ? 'done' : t.status)}
                     style={t.status === 'done' ? { opacity: .45 } : {}}>
-                    {t.name.slice(0, 9)}
+                    <span className="cal-ev-tag">마감</span>
+                    <span className="cal-ev-txt">{t.name}</span>
                   </div>
                 ))}
                 {(!isWeekend || oth) && ents.length > 2 && <div className="cal-more">+{ents.length - 2}</div>}
@@ -228,7 +251,9 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
                 return (
                   <div key={e.id} className="cal-evrow">
                     <span className="cal-evtag" style={{ background: m.bg, color: m.fg }}>{m.i} {m.l}</span>
+                    {evTime(e) && <span className="cal-evtime">{evTime(e)}</span>}
                     <span className="cal-evname">{e.title || '—'}</span>
+                    <button className="cal-evedit" onClick={() => startEdit(e)}>수정</button>
                     <button className="cal-evdel" onClick={() => delEvent(e)}>삭제</button>
                   </div>
                 );
@@ -238,10 +263,16 @@ export default function Calendar({ tasks, leaves, events = [], onReloadLeaves, o
                   <button key={k} className={'cal-chip' + (evType === k ? ' on' : '')} onClick={() => setEvType(k)}>{m.i} {m.l}</button>
                 ))}
               </div>
+              <div className="cal-evtimes">
+                <label className="cal-evtl">시작 <input type="time" className="cal-evtinp" value={evStart} onChange={e => setEvStart(e.target.value)} /></label>
+                <label className="cal-evtl">종료 <input type="time" className="cal-evtinp" value={evEnd} onChange={e => setEvEnd(e.target.value)} /></label>
+                <span className="cal-evthint">시간은 비워도 돼요</span>
+              </div>
               <div className="cal-evadd">
                 <input className="cal-evinp" placeholder="내용 (예: 서주우유젤리 감리)" value={evTitle} maxLength={60}
                   onChange={e => setEvTitle(e.target.value)} onKeyDown={e => e.key === 'Enter' && addEvent()} />
-                <button className="btn btn-sm btn-p" disabled={evBusy} onClick={addEvent}>추가</button>
+                <button className="btn btn-sm btn-p" disabled={evBusy} onClick={addEvent}>{evEditId ? '저장' : '추가'}</button>
+                {evEditId && <button className="btn btn-sm" onClick={resetEvForm}>취소</button>}
               </div>
             </div>
             {!selData.shown.length && !selData.leaveAmt && !selData.evs.length && (

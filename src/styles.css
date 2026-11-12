@@ -245,10 +245,10 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .cal-chip.amber.on{background:#BA7517;color:#fff;}
 .cal-chip.green.on{background:#3B6D11;color:#fff;}
 .cal-grid{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.cal-wds{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #E8E4DC;}
+.cal-wds{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid #E8E4DC;}
 .cal-wd{padding:8px 4px;text-align:center;font-size:11px;font-weight:600;color:#9A9590;background:#FAF9F6;}
-.cal-days{display:grid;grid-template-columns:repeat(7,1fr);}
-.cal-day{min-height:88px;padding:6px;border-right:1px solid #E8E4DC;border-bottom:1px solid #E8E4DC;cursor:pointer;transition:background .1s;background:#FFFFFF;}
+.cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));}
+.cal-day{min-width:0;min-height:88px;padding:6px;border-right:1px solid #E8E4DC;border-bottom:1px solid #E8E4DC;cursor:pointer;transition:background .1s;background:#FFFFFF;}
 .cal-day:nth-child(7n){border-right:none;}
 .cal-day:hover{background:#FAF9F6;}
 .cal-day.oth{opacity:.35;}
@@ -257,12 +257,22 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .dn{font-size:12px;font-weight:500;margin-bottom:3px;width:22px;height:22px;display:flex;align-items:center;justify-content:center;color:#1C1A16;}
 .cal-day:nth-child(7n+1) .dn{color:#E24B4A;}
 .cal-day:nth-child(7n) .dn{color:#378ADD;}
-.cal-ev{padding:2px 4px;border-radius:4px;font-size:9px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cal-ev{padding:2px 5px;border-radius:4px;font-size:11px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cal-ev.waiting{background:#F0EFEA;color:#5F5E5A;}
 .cal-ev.inprogress{background:#DDEEFF;color:#185FA5;}
 .cal-ev.hold{background:#FEF3E2;color:#BA7517;}
 .cal-ev.done{background:#EAF3DE;color:#3B6D11;}
 .cal-more{font-size:9px;color:#9A9590;padding:1px 4px;}
+.cal-ev{display:flex;align-items:center;gap:4px;}
+.cal-ev-tag{flex-shrink:0;font-weight:700;}
+.cal-ev-time{flex-shrink:0;opacity:.8;}
+.cal-ev-txt{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.cal-evtime{font-size:12px;color:#5F5E5A;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.cal-evedit{font-size:11px;color:#185FA5;background:none;border:none;cursor:pointer;padding:4px;}
+.cal-evtimes{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.cal-evtl{font-size:12px;color:#5F5E5A;display:flex;align-items:center;gap:6px;}
+.cal-evtinp{border:1px solid #D9D4C8;border-radius:8px;padding:5px 8px;font-size:16px;font-family:'Noto Sans KR',sans-serif;background:#FFFFFF;color:#1C1A16;}
+.cal-evthint{font-size:11px;color:#B4B2A9;}
 .cal-day.holiday{background:#FFF5F5;}
 .cal-day.holiday .dn{color:#E24B4A;}
 .cal-day.has-leave{background:#EEF6FF;}
@@ -280,7 +290,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .cal-evadd{display:flex;gap:6px;}
 .cal-evinp{flex:1;min-width:0;border:1px solid #D9D4C8;border-radius:10px;padding:7px 10px;font-size:16px;font-family:'Noto Sans KR',sans-serif;background:#FFFFFF;color:#1C1A16;}
 .act-sec{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.act-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px;}
+.act-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:8px;margin-top:10px;}
 .act-i{text-align:center;}
 .act-num{font-size:22px;font-weight:700;color:#1C1A16;}
 .act-lbl{font-size:11px;color:#9A9590;margin-top:2px;white-space:nowrap;}
@@ -447,6 +457,12 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   .cal-day{min-height:58px;padding:4px 3px;}
   .cal-wd{font-size:10px;padding:6px 2px;}
   .cal-ev{font-size:8px;padding:1px 3px;}
+  .cal-ev{gap:2px;}
+  .cal-evrow{flex-wrap:wrap;row-gap:4px;}
+  .cal-evname{order:5;flex:1 1 100%;white-space:normal;}
+  .cal-evedit{margin-left:auto;}
+  .cal-ev.is-ev .cal-ev-txt,.cal-ev.is-ev .cal-ev-time{display:none;}
+  .cal-ev.is-task .cal-ev-tag{display:none;}
   .cal-mo{font-size:16px;}
   .cal-toolbar-right{gap:6px;}
 
