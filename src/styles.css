@@ -339,11 +339,16 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
 .mt-empty{text-align:center;padding:3rem;color:#9A9590;font-size:13px;}
 
 /* ─── COMPLETED ─── */
-.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.sg{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;}
 .scard{background:#FFFFFF;border:1px solid #E8E4DC;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .scard-num{font-size:26px;font-weight:700;margin-bottom:4px;color:#1C1A16;}
 .scard-lbl{font-size:11px;color:#9A9590;}
 .scard-sub{font-size:11px;color:#9A9590;margin-top:2px;}
+.dt-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.dt-row .fi{flex:1 1 130px;min-width:0;}
+.dt-row .fi-time{flex:0 1 118px;}
+.fhint{font-size:11px;color:#9A9590;margin-top:6px;line-height:1.5;}
+.cw-sub{display:block;font-size:10px;color:#9A9590;margin-top:3px;}
 .lead-chip{font-size:12px;font-weight:600;color:#2A7A5A;background:#E8F5EE;padding:6px 10px;border-radius:8px;white-space:nowrap;}
 .asap-tag{display:inline-block;font-size:10px;font-weight:700;color:#B5403F;background:#FDECEC;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:middle;}
 .lt-tbl{margin-top:10px;}
@@ -433,6 +438,7 @@ td{padding:10px 14px;vertical-align:middle;color:#1C1A16;}
   /* 모바일 탭바 */
   .dg-out{display:inline-block;}
   .cw-table{display:none;}
+  .sg .scard:last-child:nth-child(odd){grid-column:1/-1;}
   .act-row{grid-template-columns:repeat(3,1fr);row-gap:14px;}
   .bar-lbl{white-space:nowrap;font-size:9px;letter-spacing:-.5px;}
   .cw-cards{display:block;}

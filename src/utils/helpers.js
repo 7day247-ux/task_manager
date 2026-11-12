@@ -1,4 +1,4 @@
-import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT } from './constants';
+import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT, KR_HOLIDAYS } from './constants';
 import { getAccessToken, signOut } from './auth';
 
 export async function api(path, opts = {}) {
@@ -99,6 +99,8 @@ export function toRow(d) {
     edit_count: d.ecnt || 0,
     pkg_type: d.pkgType || '',
     done_date: d.status === 'done' ? (d.doneDate || null) : null,
+    req_time: d.reqTime || '',
+    done_time: d.status === 'done' ? (d.doneTime || '') : '',
   };
 }
 
@@ -120,18 +122,58 @@ export function mapTask(r) {
     ecnt: r.edit_count || 0,
     pkgType: r.pkg_type || '',
     doneDate: r.done_date || '',
+    reqTime: r.req_time || '',
+    doneTime: r.done_time || '',
   };
 }
 
-// 리드타임: 요청일부터 완료일까지 걸린 날짜 수 (달력 기준, 같은 날이면 0)
+function parseYmd(v) {
+  const [y, m, d] = String(v).split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function isWorkday(d) {
+  const wd = d.getDay();
+  return wd !== 0 && wd !== 6 && !KR_HOLIDAYS[ymd(d)];
+}
+
+// 리드타임: 요청일 다음 날부터 완료일까지의 근무일 수 (주말·공휴일 제외).
+// 같은 날 끝나면 0, 금요일 요청 → 월요일 완료면 1.
 export function leadDays(task) {
   if (!task.reqDate || !task.doneDate) return null;
-  const d = Math.round((new Date(task.doneDate) - new Date(task.reqDate)) / 86400000);
-  return d >= 0 ? d : null;
+  const a = parseYmd(task.reqDate), b = parseYmd(task.doneDate);
+  if (isNaN(a) || isNaN(b) || b < a) return null;
+  let n = 0;
+  for (const d = new Date(a); d < b;) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkday(d)) n++;
+  }
+  return n;
+}
+
+// 당일 처리 건의 소요 시간(분). 요청·완료 시간이 둘 다 있을 때만 계산한다.
+export function leadMinutes(task) {
+  if (leadDays(task) !== 0 || task.reqDate !== task.doneDate) return null;
+  if (!/^\d{2}:\d{2}$/.test(task.reqTime || '') || !/^\d{2}:\d{2}$/.test(task.doneTime || '')) return null;
+  const mins = t => parseInt(t.slice(0, 2)) * 60 + parseInt(t.slice(3));
+  const m = mins(task.doneTime) - mins(task.reqTime);
+  return m >= 0 ? m : null;
+}
+
+export function fmtMinutes(m) {
+  if (m === null || m === undefined) return '—';
+  const h = Math.floor(m / 60), r = Math.round(m % 60);
+  return h ? h + '시간' + (r ? ' ' + r + '분' : '') : r + '분';
 }
 
 export function fmtLead(d) {
   return d === null || d === undefined ? '—' : d === 0 ? '당일' : d + '일';
+}
+
+// 화면 표시용: 당일이고 시간이 있으면 '4시간 45분', 아니면 '당일' / 'N일'
+export function leadLabel(task) {
+  const m = leadMinutes(task);
+  return m !== null ? fmtMinutes(m) : fmtLead(leadDays(task));
 }
 
 // 기기 시간대 기준 오늘 날짜 (toISOString은 UTC라 한국 오전 9시 전에는 어제로 나온다)
@@ -194,7 +236,7 @@ export function printTasksHtml(tasks, mode) {
         <td style="${tdS}text-align:center;">${t.ecnt || 0}회</td>
         <td style="${tdS}">${fmtDate(t.reqDate)}</td>
         <td style="${tdS}">${fmtDate(t.doneDate)}</td>
-        <td style="${tdS}">${fmtLead(leadDays(t))}${t.asap ? ' (ASAP)' : ''}</td>
+        <td style="${tdS}">${leadLabel(t)}${t.asap ? ' (ASAP)' : ''}</td>
         <td style="${tdS}">${t.note || ''}</td>
       </tr>`;
     });
