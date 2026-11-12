@@ -4,6 +4,8 @@ import { signIn } from '../utils/auth';
 export default function LockScreen({ onUnlock }) {
   const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
+  const [showEmail, setShowEmail] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -28,24 +30,35 @@ export default function LockScreen({ onUnlock }) {
         <div className="lock-logo">📋</div>
         <div className="lock-title">업무 관리</div>
         <div className="lock-sub">로그인해주세요</div>
-        <input
-          className="lock-inp lock-inp-email"
-          type="email"
-          name="email"
-          autoComplete="username"
-          placeholder="이메일"
-          value={email}
-          onChange={e => { setEmail(e.target.value); setErr(''); }}
-        />
-        <input
-          className="lock-inp"
-          type="password"
-          name="password"
-          autoComplete="current-password"
-          placeholder="••••••••"
-          value={pw}
-          onChange={e => { setPw(e.target.value); setErr(''); }}
-        />
+
+        <div className="lock-field">
+          <input
+            className="lock-inp lock-inp-email"
+            type={showEmail ? 'text' : 'password'}
+            name="email"
+            autoComplete="username"
+            placeholder="이메일"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setErr(''); }}
+          />
+          <button type="button" className="lock-eye" tabIndex={-1}
+            onClick={() => setShowEmail(v => !v)}>{showEmail ? '🙈' : '👁️'}</button>
+        </div>
+
+        <div className="lock-field">
+          <input
+            className="lock-inp"
+            type={showPw ? 'text' : 'password'}
+            name="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            value={pw}
+            onChange={e => { setPw(e.target.value); setErr(''); }}
+          />
+          <button type="button" className="lock-eye" tabIndex={-1}
+            onClick={() => setShowPw(v => !v)}>{showPw ? '🙈' : '👁️'}</button>
+        </div>
+
         <div className="lock-err">{err}</div>
         <button className="lock-btn" type="submit" disabled={busy}>
           {busy ? '확인 중…' : '로그인'}

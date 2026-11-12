@@ -11,6 +11,17 @@ body{font-family:'Noto Sans KR',sans-serif;background:#F5F3EE;color:#1C1A16;font
 .lock-sub{font-size:12px;color:#9A9590;margin-bottom:1.5rem;}
 .lock-inp{width:100%;border:1.5px solid #D9D4C8;border-radius:10px;padding:11px;font-size:15px;text-align:center;letter-spacing:6px;background:#FAF9F6;color:#1C1A16;font-family:'Noto Sans KR',sans-serif;margin-bottom:8px;}
 .lock-inp-email{letter-spacing:normal;}
+.lock-field{position:relative;margin-bottom:8px;}
+.lock-field .lock-inp{margin-bottom:0;padding-right:40px;}
+.lock-eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer;padding:6px 8px;line-height:1;}
+.pwm-ovl{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
+.pwm-box{background:#FFFFFF;border-radius:14px;padding:22px;width:100%;max-width:340px;}
+.pwm-ttl{font-size:16px;font-weight:700;margin-bottom:14px;color:#1C1A16;}
+.pwm-lbl{font-size:12px;color:#9A9590;margin-bottom:4px;display:block;}
+.pwm-grp{margin-bottom:12px;}
+.pwm-ok{font-size:12px;color:#3B6D11;margin-bottom:10px;}
+.pwm-btns{display:flex;gap:8px;margin-top:4px;}
+
 .dg-out{display:none;float:right;font-size:11px;color:#9A9590;background:none;border:1px solid #E8E4DC;border-radius:20px;padding:3px 10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
 .lock-inp:focus{outline:none;border-color:#4A7C6F;}
 .lock-err{font-size:12px;color:#E24B4A;margin-bottom:10px;min-height:18px;}
