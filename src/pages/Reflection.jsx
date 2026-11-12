@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { MOODS, REFLECTION_TAGS } from '../utils/constants';
 import { api } from '../utils/helpers';
 import ReflectionLock from '../components/ReflectionLock';
@@ -70,17 +71,17 @@ export default function Reflection({ showToast }) {
         <div>
           <div className="pt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span>Reflection</span>
-            <span style={{ fontSize: 13, fontWeight: 400, color: '#9A9590' }}>
+            <span style={{ fontSize: 13, fontWeight: 400, color: '#8A8A8A' }}>
               {entries.length}개의 기록
             </span>
           </div>
           <div className="ps">나만의 성장 일지</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input className="fi" placeholder="🔍 검색..." value={search}
+          <input className="fi" placeholder="검색" value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: 180, fontSize: 13 }} />
-          <button className="btn btn-p" style={{ background: '#6B5FA0', borderColor: 'transparent' }}
+          <button className="btn btn-p"
             onClick={() => setModal(null)}>
             + 새 기록
           </button>
@@ -106,30 +107,28 @@ export default function Reflection({ showToast }) {
       {/* 필터 칩 */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         <button className={'chip' + (filterMood === 'all' ? ' on' : '')}
-          style={filterMood === 'all' ? { background: '#6B5FA0', borderColor: 'transparent' } : {}}
           onClick={() => setFilterMood('all')}>전체</button>
         {MOODS.map(m => (
           <button key={m.id}
             className={'chip' + (filterMood === m.id ? ' on' : '')}
-            style={filterMood === m.id ? { background: '#6B5FA0', borderColor: 'transparent' } : {}}
             onClick={() => setFilterMood(filterMood === m.id ? 'all' : m.id)}>
-            {m.icon} {m.label}
+            <Icon name={m.icon} size={13} /> {m.label}
           </button>
         ))}
         {filterTag !== 'all' && (
           <button className="chip on"
-            style={{ background: '#6B5FA0', borderColor: 'transparent' }}
+           
             onClick={() => setFilterTag('all')}>
-            #{filterTag} ✕
+            #{filterTag} <Icon name="x" size={11} />
           </button>
         )}
       </div>
 
       {/* 카드 목록 */}
       {!filtered.length ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0', color: '#9A9590' }}>
+        <div style={{ textAlign: 'center', padding: '4rem 0', color: '#8A8A8A' }}>
           {entries.length === 0
-            ? <><div style={{ fontSize: 40, marginBottom: 12 }}>🌱</div><div style={{ fontSize: 14 }}>첫 번째 기록을 남겨보세요</div><div style={{ fontSize: 12, marginTop: 6 }}>작은 기록이 쌓여서 큰 성장이 돼요</div></>
+            ? <><div style={{ marginBottom: 12, color: '#C8C8C8' }}><Icon name="sprout" size={40} stroke={1.25} /></div><div style={{ fontSize: 14 }}>첫 번째 기록을 남겨보세요</div><div style={{ fontSize: 12, marginTop: 6 }}>작은 기록이 쌓여서 큰 성장이 돼요</div></>
             : <div style={{ fontSize: 13 }}>검색 결과가 없어요</div>
           }
         </div>
@@ -162,19 +161,19 @@ function ReflectionCard({ entry, onClick }) {
   return (
     <div className="rf-card" onClick={onClick}>
       <div className="rf-card-top">
-        <span className="rf-mood-badge">{mood.icon} {mood.label}</span>
+        <span className="rf-mood-badge"><Icon name={mood.icon} size={12} /> {mood.label}</span>
         <span className="rf-card-date">{date}</span>
       </div>
       <div className="rf-card-title">{entry.title}</div>
       {entry.learned && (
         <div className="rf-card-section">
-          <span className="rf-card-label">💡</span>
+          <span className="rf-card-label"><Icon name="bulb" size={13} /></span>
           <span className="rf-card-text">{entry.learned}</span>
         </div>
       )}
       {entry.next_action && (
         <div className="rf-card-section">
-          <span className="rf-card-label">✅</span>
+          <span className="rf-card-label"><Icon name="check" size={13} /></span>
           <span className="rf-card-text">{entry.next_action}</span>
         </div>
       )}

@@ -33,35 +33,35 @@ export const VID_STEPS = [
 ];
 
 export const STATUS = {
-  waiting:    { l: '대기',   c: '#B4B2A9' },
-  inprogress: { l: '진행중', c: '#378ADD' },
-  hold:       { l: '홀드',   c: '#EF9F27' },
-  done:       { l: '완료',   c: '#639922' },
+  waiting:    { l: '대기',   c: '#C8C8C8' },
+  inprogress: { l: '진행중', c: '#FF7A1A' },
+  hold:       { l: '홀드',   c: '#7A7A7A' },
+  done:       { l: '완료',   c: '#111111' },
 };
 
 export const CAT = {
-  pkg:     { l: '패키지',   i: '📦', b: 'b-pkg' },
-  inhouse: { l: '사내 디자인', i: '🎨', b: 'b-vid' },
-  posm:    { l: 'POSM',     i: '🪧', b: 'b-posm' },
-  project: { l: '프로젝트', i: '🗂', b: 'b-prj' },
-  general: { l: '일반',     i: '📋', b: 'b-gen' },
+  pkg:     { l: '패키지',   i: 'package',   b: 'b-pkg' },
+  inhouse: { l: '사내 디자인', i: 'palette', b: 'b-vid' },
+  posm:    { l: 'POSM',     i: 'signpost',  b: 'b-posm' },
+  project: { l: '프로젝트', i: 'folder',    b: 'b-prj' },
+  general: { l: '일반',     i: 'clipboard', b: 'b-gen' },
 };
 
 export const EVENT_TYPE = {
-  meeting: { l: '회의', i: '🤝', bg: '#F0EEFB', fg: '#6B5FA0' },
-  outside: { l: '외근', i: '🚗', bg: '#FEF3E2', fg: '#BA7517' },
-  trip:    { l: '출장', i: '🧳', bg: '#E8F5EE', fg: '#2A7A5A' },
-  audit:   { l: '감리', i: '🖨️', bg: '#FDECEC', fg: '#B5403F' },
-  shoot:   { l: '촬영', i: '📷', bg: '#E6F1FB', fg: '#185FA5' },
-  dinner:  { l: '회식', i: '🍻', bg: '#F5F0E1', fg: '#8A6D1F' },
+  meeting: { l: '회의', i: 'users',    bg: '#111111', fg: '#FFFFFF' },
+  outside: { l: '외근', i: 'car',      bg: '#ECECEC', fg: '#111111' },
+  trip:    { l: '출장', i: 'luggage',  bg: '#FFE6D2', fg: '#B5520C' },
+  audit:   { l: '감리', i: 'printer',  bg: '#FF7A1A', fg: '#FFFFFF' },
+  shoot:   { l: '촬영', i: 'camera',   bg: '#FFFFFF', fg: '#111111' },
+  dinner:  { l: '회식', i: 'utensils', bg: '#DADADA', fg: '#3A3A3A' },
 };
 
 export const MT_TYPE = {
-  meeting: { l: '🤝 회의', c: 'mt-meeting' },
-  call:    { l: '📞 통화', c: 'mt-call' },
-  mail:    { l: '📧 메일', c: 'mt-mail' },
-  memo:    { l: '💡 메모', c: 'mt-memo' },
-  etc:     { l: '📌 기타', c: 'mt-etc' },
+  meeting: { l: '회의', i: 'users', c: 'mt-meeting' },
+  call:    { l: '통화', i: 'phone', c: 'mt-call' },
+  mail:    { l: '메일', i: 'mail',  c: 'mt-mail' },
+  memo:    { l: '메모', i: 'bulb',  c: 'mt-memo' },
+  etc:     { l: '기타', i: 'pin',   c: 'mt-etc' },
 };
 
 export const PKG_LABELS = {
@@ -115,11 +115,11 @@ export const JOIN_DATE = '2026-10-19';
 export const REFLECTION_PASSWORD = '2233';
 
 export const MOODS = [
-  { id: 'reflect', icon: '😤', label: '반성' },
-  { id: 'learn',   icon: '💡', label: '배움' },
-  { id: 'observe', icon: '👀', label: '관찰' },
-  { id: 'grow',    icon: '🌱', label: '성장' },
-  { id: 'comm',    icon: '💬', label: '소통' },
+  { id: 'reflect', icon: 'frown',   label: '반성' },
+  { id: 'learn',   icon: 'bulb',    label: '배움' },
+  { id: 'observe', icon: 'eye',     label: '관찰' },
+  { id: 'grow',    icon: 'sprout',  label: '성장' },
+  { id: 'comm',    icon: 'message', label: '소통' },
 ];
 
 export const REFLECTION_TAGS = [

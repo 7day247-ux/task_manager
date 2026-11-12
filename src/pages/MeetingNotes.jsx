@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from '../components/Icon';
 import { MT_TYPE } from '../utils/constants';
 import MeetingModal from '../components/MeetingModal';
 import { today } from '../utils/helpers';
@@ -11,10 +12,10 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
   function printMtDate(ds) {
     ds = String(ds).trim();
     const dms = meetings.filter(m => String(m.meet_date).trim() === ds);
-    const thS = 'background:#2C2C2A;color:#fff;padding:6px 10px;text-align:left;font-size:10px;border:1px solid #ccc;';
+    const thS = 'background:#111111;color:#fff;padding:6px 10px;text-align:left;font-size:10px;border:1px solid #ccc;';
     const tdS = 'padding:5px 10px;font-size:10px;border:1px solid #e0e0e0;vertical-align:top;';
     let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>회의록 ${ds.replace(/-/g, '.')}</title></head><body style="font-family:sans-serif;padding:24px;">`;
-    html += `<div style="display:flex;justify-content:space-between;margin-bottom:16px;border-bottom:2px solid #2C2C2A;padding-bottom:10px;"><div style="font-size:16px;font-weight:700;">회의록 — ${ds.replace(/-/g, '.')}</div><div style="font-size:11px;color:#888;">출력일: ${new Date().toLocaleDateString('ko-KR')}</div></div>`;
+    html += `<div style="display:flex;justify-content:space-between;margin-bottom:16px;border-bottom:2px solid #111111;padding-bottom:10px;"><div style="font-size:16px;font-weight:700;">회의록 — ${ds.replace(/-/g, '.')}</div><div style="font-size:11px;color:#888;">출력일: ${new Date().toLocaleDateString('ko-KR')}</div></div>`;
     dms.forEach(m => {
       const mt = MT_TYPE[m.meet_type] || MT_TYPE.etc;
       const its = mtItems.filter(it => String(it.meeting_id) === String(m.id));
@@ -23,7 +24,7 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
       if (its.length) {
         html += `<table style="width:100%;border-collapse:collapse;font-size:10px;"><thead><tr><th style="${thS}">타이틀</th><th style="${thS}">내용</th><th style="${thS}">태그</th><th style="${thS}">마감일</th><th style="${thS}">담당자</th></tr></thead><tbody>`;
         its.forEach((it, idx) => {
-          html += `<tr style="${idx % 2 ? 'background:#f8f8f6;' : ''}"><td style="${tdS}font-weight:600;">${it.title || ''}</td><td style="${tdS}">${it.content || ''}</td><td style="${tdS}">${it.tags || ''}</td><td style="${tdS}">${it.due_date || ''}</td><td style="${tdS}">${it.assignee || ''}</td></tr>`;
+          html += `<tr style="${idx % 2 ? 'background:#F6F6F6;' : ''}"><td style="${tdS}font-weight:600;">${it.title || ''}</td><td style="${tdS}">${it.content || ''}</td><td style="${tdS}">${it.tags || ''}</td><td style="${tdS}">${it.due_date || ''}</td><td style="${tdS}">${it.assignee || ''}</td></tr>`;
         });
         html += '</tbody></table>';
       } else { html += '<div style="font-size:12px;color:#888;">항목 없음</div>'; }
@@ -53,7 +54,7 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
           <div className="ps">날짜별 기록 관리</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <input className="fi" placeholder="🔍 검색..." value={search}
+          <input className="fi" placeholder="검색" value={search}
             onChange={e => setSearch(e.target.value)} style={{ width: 200, fontSize: 13 }} />
           <button className="btn btn-p" onClick={() => setEditMeeting(null)}>
             <span>+</span><span className="hide-mobile"> 새 기록</span>
@@ -75,17 +76,17 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                 <div key={m.id} className="mt-grp">
                   <div className="mt-dh">
                     <div className="mt-dlbl">
-                      {m.meet_date === todayStr && <span style={{ color: '#4A7C6F', fontWeight: 700 }}>오늘 </span>}
+                      {m.meet_date === todayStr && <span style={{ color: '#FF7A1A', fontWeight: 700 }}>오늘 </span>}
                       {dl}
                     </div>
                     <div className="mt-dl" />
-                    <button className="mt-dpdf" onClick={() => printMtDate(m.meet_date)}>📄 PDF</button>
+                    <button className="mt-dpdf" onClick={() => printMtDate(m.meet_date)}><Icon name="file" size={12} /> PDF</button>
                   </div>
                   <div className="mt-card">
                     <div className="mt-ch">
-                      <span className={'mt-tb ' + mt.c}>{mt.l}</span>
+                      <span className={'mt-tb ' + mt.c}><Icon name={mt.i} size={11} /> {mt.l}</span>
                       <span className="mt-ct">{m.meet_title || ''}</span>
-                      {m.attendees && <span style={{ fontSize: 11, color: '#9A9590', marginLeft: 8 }}>👥 {m.attendees}</span>}
+                      {m.attendees && <span style={{ fontSize: 11, color: '#8A8A8A', marginLeft: 8, display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="users" size={12} /> {m.attendees}</span>}
                       <div className="mt-acts">
                         <button className="btn btn-sm btn-g" onClick={() => setEditMeeting(m)}>수정</button>
                       </div>
@@ -109,10 +110,10 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                                 return (
                                   <tr key={item.id}>
                                     <td style={{ fontWeight: 500 }}>{item.title || ''}</td>
-                                    <td style={{ color: '#5A5550' }}>{item.content || ''}</td>
+                                    <td style={{ color: '#555555' }}>{item.content || ''}</td>
                                     <td>{tgs.map((t, i) => <span key={i} className="mt-tag">#{t}</span>)}</td>
-                                    <td style={{ color: '#9A9590' }}>{item.due_date ? item.due_date.slice(5).replace('-', '.') : ''}</td>
-                                    <td style={{ color: '#9A9590' }}>{item.assignee || ''}</td>
+                                    <td style={{ color: '#8A8A8A' }}>{item.due_date ? item.due_date.slice(5).replace('-', '.') : ''}</td>
+                                    <td style={{ color: '#8A8A8A' }}>{item.assignee || ''}</td>
                                     <td>{lt ? <span className="mt-lnk">{lt.name.slice(0, 10)}</span> : ''}</td>
                                   </tr>
                                 );
@@ -131,8 +132,8 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                                 {item.content && <div className="mt-item-content">{item.content}</div>}
                                 <div className="mt-item-meta">
                                   {tgs.length > 0 && <div>{tgs.map((t, i) => <span key={i} className="mt-tag">#{t}</span>)}</div>}
-                                  {item.due_date && <span style={{ fontSize: 11, color: '#9A9590' }}>📅 {item.due_date.slice(5).replace('-', '.')}</span>}
-                                  {item.assignee && <span style={{ fontSize: 11, color: '#9A9590' }}>👤 {item.assignee}</span>}
+                                  {item.due_date && <span style={{ fontSize: 11, color: '#8A8A8A', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="calendar" size={11} /> {item.due_date.slice(5).replace('-', '.')}</span>}
+                                  {item.assignee && <span style={{ fontSize: 11, color: '#8A8A8A', display: 'inline-flex', alignItems: 'center', gap: 3 }}><Icon name="user" size={11} /> {item.assignee}</span>}
                                   {lt && <span className="mt-lnk" style={{ fontSize: 11 }}>{lt.name.slice(0, 14)}</span>}
                                 </div>
                               </div>
@@ -141,7 +142,7 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                         </div>
                       </>
                     ) : (
-                      <div style={{ fontSize: 12, color: '#9A9590', padding: '8px 0' }}>항목이 없습니다.</div>
+                      <div style={{ fontSize: 12, color: '#8A8A8A', padding: '8px 0' }}>항목이 없습니다.</div>
                     )}
                   </div>
                 </div>
@@ -173,13 +174,13 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                 const lt  = item.task_id ? tasks.find(t => t.id === item.task_id) : null;
                 return (
                   <tr key={item.id}>
-                    <td style={{ fontSize: 12, color: '#9A9590' }}>{m.meet_date ? m.meet_date.replace(/-/g, '.') : ''}</td>
+                    <td style={{ fontSize: 12, color: '#8A8A8A' }}>{m.meet_date ? m.meet_date.replace(/-/g, '.') : ''}</td>
                     <td><span className={'mt-tb ' + mt.c} style={{ fontSize: 10, padding: '2px 7px' }}>{mt.l}</span></td>
                     <td style={{ fontWeight: 500 }}>{item.title || ''}</td>
-                    <td style={{ color: '#5A5550', fontSize: 12 }}>{item.content || ''}</td>
+                    <td style={{ color: '#555555', fontSize: 12 }}>{item.content || ''}</td>
                     <td>{tgs.map((t, i) => <span key={i} className="mt-tag">#{t}</span>)}</td>
-                    <td style={{ fontSize: 12, color: '#9A9590' }}>{item.due_date ? item.due_date.slice(5).replace('-', '.') : ''}</td>
-                    <td style={{ fontSize: 12, color: '#9A9590' }}>{item.assignee || ''}</td>
+                    <td style={{ fontSize: 12, color: '#8A8A8A' }}>{item.due_date ? item.due_date.slice(5).replace('-', '.') : ''}</td>
+                    <td style={{ fontSize: 12, color: '#8A8A8A' }}>{item.assignee || ''}</td>
                     <td>{lt ? <span className="mt-lnk" style={{ fontSize: 10 }}>{lt.name.slice(0, 8)}</span> : ''}</td>
                   </tr>
                 );

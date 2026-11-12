@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL, ITEM_SUGGEST, POSM_LABELS, PRODUCT_LINE } from '../utils/constants';
 import ImageGrid, { UploadButton } from './ImageGrid';
 import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
@@ -221,12 +222,12 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
             <div className="mhd-t">{task ? task.name : '새 태스크'}</div>
             {task && <div className="mhd-s">{(CAT[task.cat] || { l: '' }).l + ' · ' + { waiting: '대기', inprogress: '진행중', hold: '홀드', done: '완료' }[task.status]}</div>}
           </div>
-          <button className="xbtn" onClick={onClose}>✕</button>
+          <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
 
         <div className="mbd">
           {form.status === 'hold' && (
-            <div className="hban" style={{ display: 'flex' }}>⚠️ 홀드 상태입니다. 비고에 사유를 기록해두세요.</div>
+            <div className="hban" style={{ display: 'flex' }}><Icon name="alert" size={15} /> 홀드 상태입니다. 비고에 사유를 기록해두세요.</div>
           )}
 
           <div className="two">
@@ -239,11 +240,11 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
               <label className="fl">카테고리</label>
               <select className="fs" value={form.cat}
                 onChange={e => { set('cat', e.target.value); set('pkgType', ''); if (e.target.value === 'project') set('ttype', 'new'); }}>
-                <option value="pkg">📦 패키지 디자인</option>
-                <option value="inhouse">🎨 사내 디자인</option>
-                <option value="posm">🪧 POSM</option>
-                <option value="project">🗂 프로젝트</option>
-                <option value="general">📋 일반 업무</option>
+                <option value="pkg">패키지 디자인</option>
+                <option value="inhouse">사내 디자인</option>
+                <option value="posm">POSM</option>
+                <option value="project">프로젝트</option>
+                <option value="general">일반 업무</option>
               </select>
             </div>
           </div>
@@ -251,18 +252,18 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
           <div className="fg">
             <label className="fl">업무 타입</label>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#1C1A16' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#111111' }}>
                 <input type="radio" name="ttype" value="new" checked={form.ttype === 'new'}
                   onChange={() => set('ttype', 'new')} /> 신규
               </label>
               {showEdit && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#1C1A16' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#111111' }}>
                   <input type="radio" name="ttype" value="edit" checked={form.ttype === 'edit'}
                     onChange={() => set('ttype', 'edit')} /> 수정
                 </label>
               )}
               {showVari && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#1C1A16' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, cursor: 'pointer', color: '#111111' }}>
                   <input type="radio" name="ttype" value="variation" checked={form.ttype === 'variation'}
                     onChange={() => set('ttype', 'variation')} /> 베리에이션
                 </label>
@@ -330,7 +331,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <input className="fi" type="date" value={form.dueDate} style={{ flex: 1 }}
                   onChange={e => set('dueDate', e.target.value)} disabled={form.asap} />
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#9A9590', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#8A8A8A', cursor: 'pointer' }}>
                   <input type="checkbox" checked={form.asap}
                     onChange={e => { set('asap', e.target.checked); if (e.target.checked) set('dueDate', ''); }} />
                   ASAP
@@ -394,7 +395,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
                   <button type="button" className="ctr-btn" onClick={() => set('proposalCount', Math.max(0, form.proposalCount - 1))}>−</button>
                   <div className="ctr-num">{form.proposalCount}</div>
                   <button type="button" className="ctr-btn" onClick={() => set('proposalCount', form.proposalCount + 1)}>+</button>
-                  <span style={{ fontSize: 12, color: '#9A9590' }}>안 · 처음 제안한 시안</span>
+                  <span style={{ fontSize: 12, color: '#8A8A8A' }}>안 · 처음 제안한 시안</span>
                 </div>
               </div>
               {form.cat === 'pkg' && form.items.length > 0 && (
@@ -415,7 +416,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
               <button type="button" className="ctr-btn" onClick={() => setCtrVal(v => Math.max(0, v - 1))}>−</button>
               <div className="ctr-num">{ctrVal}</div>
               <button type="button" className="ctr-btn" onClick={() => setCtrVal(v => v + 1)}>+</button>
-              <span style={{ fontSize: 12, color: '#9A9590' }}>회 · 수정 요청을 받을 때마다 +1</span>
+              <span style={{ fontSize: 12, color: '#8A8A8A' }}>회 · 수정 요청을 받을 때마다 +1</span>
             </div>
           </div>
 
@@ -458,10 +459,10 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
                   custSteps.map((it, i) => (
                     <div className="si" key={i}>
                       <div className={'sc2' + (it.done ? ' on' : '')} onClick={() => togG(i)}>
-                        {it.done ? '✓' : ''}
+                        {it.done ? <Icon name="check" size={12} stroke={2.5} /> : ''}
                       </div>
                       <span className={'sn' + (it.done ? ' done' : '')}>{it.name}</span>
-                      <span onClick={() => delCS(i)} style={{ marginLeft: 'auto', cursor: 'pointer', fontSize: 14, color: '#9A9590', padding: '0 4px' }}>✕</span>
+                      <span onClick={() => delCS(i)} style={{ marginLeft: 'auto', cursor: 'pointer', fontSize: 14, color: '#8A8A8A', padding: '0 4px', display: 'inline-flex' }}><Icon name="x" size={14} /></span>
                     </div>
                   ))
                 ) : (
@@ -470,12 +471,12 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
                     return (
                       <div className="si" key={i} style={{ flexWrap: 'wrap', gap: 4 }}>
                         <div className={'sc2' + (obj.done ? ' on' : '')} onClick={() => togS(i)}>
-                          {obj.done ? '✓' : ''}
+                          {obj.done ? <Icon name="check" size={12} stroke={2.5} /> : ''}
                         </div>
                         <span className={'sn' + (obj.done ? ' done' : '')} style={{ minWidth: 120 }}>{i + 1}. {nm}</span>
                         <div className="step-dates">
                           {(obj.dates || []).map((d, di) => (
-                            <span key={di} className="step-date-tag" onClick={() => removeStepDate(i, di)}>{d} ✕</span>
+                            <span key={di} className="step-date-tag" onClick={() => removeStepDate(i, di)}>{d} <Icon name="x" size={10} /></span>
                           ))}
                           <button className="step-add-date" onClick={() => addStepDate(i)}>+ 날짜</button>
                         </div>

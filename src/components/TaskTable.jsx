@@ -37,15 +37,15 @@ function TaskCard({ t, onRowClick }) {
           <span className="dot" style={{ background: st.c }} />
           <span style={{ fontSize: 12 }}>{st.l}</span>
         </div>
-        <div style={{ fontSize: 12, color: '#9A9590' }}>
+        <div style={{ fontSize: 12, color: '#8A8A8A' }}>
           요청 {fmtDate(t.reqDate)}
         </div>
         <div style={{ fontSize: 12 }}>
           {t.asap
             ? <span className="asap-t">ASAP</span>
             : t.dueDate
-              ? <><span style={{ color: '#9A9590' }}>기한 {fmtDate(t.dueDate)}</span>{dd && <span className={'dday ' + dd.cls}>{dd.label}</span>}</>
-              : <span style={{ color: '#9A9590' }}>기한 —</span>
+              ? <><span style={{ color: '#8A8A8A' }}>기한 {fmtDate(t.dueDate)}</span>{dd && <span className={'dday ' + dd.cls}>{dd.label}</span>}</>
+              : <span style={{ color: '#8A8A8A' }}>기한 —</span>
           }
         </div>
       </div>
@@ -61,7 +61,7 @@ function TaskCard({ t, onRowClick }) {
 export default function TaskTable({ rows, onRowClick }) {
   if (!rows.length) {
     return (
-      <div className="empty-r" style={{ padding: '2rem', textAlign: 'center', color: '#9A9590', fontSize: 13 }}>
+      <div className="empty-r" style={{ padding: '2rem', textAlign: 'center', color: '#8A8A8A', fontSize: 13 }}>
         태스크가 없습니다.
       </div>
     );
@@ -103,8 +103,8 @@ export default function TaskTable({ rows, onRowClick }) {
               const dueCell = t.asap
                 ? <span className="asap-t">ASAP</span>
                 : t.dueDate
-                  ? <><span style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.dueDate)}</span>{dd && <span className={'dday ' + dd.cls}>{dd.label}</span>}</>
-                  : <span style={{ color: '#9A9590' }}>—</span>;
+                  ? <><span style={{ fontSize: 12, color: '#8A8A8A' }}>{fmtDate(t.dueDate)}</span>{dd && <span className={'dday ' + dd.cls}>{dd.label}</span>}</>
+                  : <span style={{ color: '#8A8A8A' }}>—</span>;
               return (
                 <tr key={t.id} className="row" onClick={() => onRowClick(t.id)}>
                   <td style={{ fontWeight: 500, fontSize: 13 }}>{t.name}</td>
@@ -114,10 +114,10 @@ export default function TaskTable({ rows, onRowClick }) {
                     <div className="slbl">{cs.length > 14 ? cs.slice(0, 14) + '…' : cs}</div>
                     <div className="pbar"><div className="pfill" style={{ width: p + '%', background: st.c }} /></div>
                   </td>
-                  <td style={{ fontSize: 12, color: '#9A9590' }}>{fmtDate(t.reqDate)}</td>
+                  <td style={{ fontSize: 12, color: '#8A8A8A' }}>{fmtDate(t.reqDate)}</td>
                   <td>{dueCell}</td>
                   <td><div style={{ display: 'flex', alignItems: 'center' }}><span className="dot" style={{ background: st.c }} /><span style={{ fontSize: 12 }}>{st.l}</span></div></td>
-                  <td style={{ fontSize: 11, color: '#9A9590' }}>{nt}</td>
+                  <td style={{ fontSize: 11, color: '#8A8A8A' }}>{nt}</td>
                 </tr>
               );
             })}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Icon from './Icon';
 import { api, today } from '../utils/helpers';
 
 function emptyRow() {
@@ -87,7 +88,7 @@ export default function MeetingModal({ meeting, mtItems, tasks, onClose, onSaved
             <div className="mhd-t">{isEdit ? '기록 수정' : '새 기록'}</div>
             {isEdit && <div className="mhd-s">{meeting.meet_date ? meeting.meet_date.replace(/-/g, '.') : ''}</div>}
           </div>
-          <button className="xbtn" onClick={onClose}>✕</button>
+          <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
 
         <div className="mbd">
@@ -99,11 +100,11 @@ export default function MeetingModal({ meeting, mtItems, tasks, onClose, onSaved
             <div className="fg">
               <label className="fl">타입</label>
               <select className="fs" value={type} onChange={e => setType(e.target.value)}>
-                <option value="meeting">🤝 회의</option>
-                <option value="call">📞 통화</option>
-                <option value="mail">📧 메일</option>
-                <option value="memo">💡 메모</option>
-                <option value="etc">📌 기타</option>
+                <option value="meeting">회의</option>
+                <option value="call">통화</option>
+                <option value="mail">메일</option>
+                <option value="memo">메모</option>
+                <option value="etc">기타</option>
               </select>
             </div>
           </div>
@@ -124,7 +125,7 @@ export default function MeetingModal({ meeting, mtItems, tasks, onClose, onSaved
               <button className="btn btn-sm" onClick={() => setMRows(prev => [...prev, emptyRow()])}>+ 항목 추가</button>
             </div>
             {mRows.map((row, i) => (
-              <div key={i} style={{ background: '#FAF9F6', border: '1px solid #E8E4DC', borderRadius: 10, padding: 12, marginBottom: 8 }}>
+              <div key={i} style={{ background: '#F6F6F6', border: '1px solid #E3E3E3', borderRadius: 10, padding: 12, marginBottom: 8 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: 8, marginBottom: 8 }}>
                   <input className="fi" placeholder="타이틀" value={row.title} style={{ fontSize: 12, padding: '6px 8px' }}
                     onChange={e => updateRow(i, 'title', e.target.value)} />
@@ -144,7 +145,7 @@ export default function MeetingModal({ meeting, mtItems, tasks, onClose, onSaved
                     {activeTasks.map(t => <option key={t.id} value={t.id}>{t.name.slice(0, 22)}</option>)}
                   </select>
                   <button className="btn btn-sm" style={{ color: '#E24B4A', borderColor: '#F09595', padding: '5px 8px' }}
-                    onClick={() => setMRows(prev => prev.filter((_, idx) => idx !== i))}>✕</button>
+                    onClick={() => setMRows(prev => prev.filter((_, idx) => idx !== i))}><Icon name="x" size={14} /></button>
                 </div>
               </div>
             ))}

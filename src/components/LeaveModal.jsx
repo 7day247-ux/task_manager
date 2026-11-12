@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from './Icon';
 import { api, today } from '../utils/helpers';
 
 export default function LeaveModal({ leaves, onClose, onSaved, showToast }) {
@@ -33,10 +34,10 @@ export default function LeaveModal({ leaves, onClose, onSaved, showToast }) {
       <div className="modal" style={{ maxWidth: 440 }} onClick={e => e.stopPropagation()}>
         <div className="mhd">
           <div>
-            <div className="mhd-t">🏖️ 연차 관리</div>
+            <div className="mhd-t"><Icon name="palm" size={18} /> 연차 관리</div>
             <div className="mhd-s">총 {total}일 사용</div>
           </div>
-          <button className="xbtn" onClick={onClose}>✕</button>
+          <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
         <div className="mbd">
           <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -49,21 +50,21 @@ export default function LeaveModal({ leaves, onClose, onSaved, showToast }) {
           </div>
 
           {!sorted.length ? (
-            <div style={{ textAlign: 'center', padding: '1.5rem', color: '#9A9590', fontSize: 13 }}>사용한 연차가 없어요</div>
+            <div style={{ textAlign: 'center', padding: '1.5rem', color: '#8A8A8A', fontSize: 13 }}>사용한 연차가 없어요</div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '7px 10px', textAlign: 'left', fontSize: 11, color: '#9A9590', background: '#FAF9F6', borderBottom: '1px solid #E8E4DC' }}>날짜</th>
-                  <th style={{ padding: '7px 10px', textAlign: 'center', fontSize: 11, color: '#9A9590', background: '#FAF9F6', borderBottom: '1px solid #E8E4DC' }}>일수</th>
-                  <th style={{ padding: '7px 10px', background: '#FAF9F6', borderBottom: '1px solid #E8E4DC' }}></th>
+                  <th style={{ padding: '7px 10px', textAlign: 'left', fontSize: 11, color: '#8A8A8A', background: '#F6F6F6', borderBottom: '1px solid #E3E3E3' }}>날짜</th>
+                  <th style={{ padding: '7px 10px', textAlign: 'center', fontSize: 11, color: '#8A8A8A', background: '#F6F6F6', borderBottom: '1px solid #E3E3E3' }}>일수</th>
+                  <th style={{ padding: '7px 10px', background: '#F6F6F6', borderBottom: '1px solid #E3E3E3' }}></th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.map(l => (
-                  <tr key={l.id} style={{ borderBottom: '1px solid #E8E4DC' }}>
-                    <td style={{ padding: '8px 10px', color: '#1C1A16' }}>{l.leave_date.replace(/-/g, '.')}</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'center', color: '#185FA5', fontWeight: 600 }}>{l.amount}일</td>
+                  <tr key={l.id} style={{ borderBottom: '1px solid #E3E3E3' }}>
+                    <td style={{ padding: '8px 10px', color: '#111111' }}>{l.leave_date.replace(/-/g, '.')}</td>
+                    <td style={{ padding: '8px 10px', textAlign: 'center', color: '#B5520C', fontWeight: 600 }}>{l.amount}일</td>
                     <td style={{ padding: '8px 10px', textAlign: 'right' }}>
                       <button onClick={() => del(l.id)} style={{ fontSize: 11, color: '#E24B4A', background: 'none', border: 'none', cursor: 'pointer' }}>삭제</button>
                     </td>

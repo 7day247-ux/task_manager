@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Icon from './Icon';
 import { signIn, updatePassword, getEmail } from '../utils/auth';
 import EyeIcon from './EyeIcon';
 import SecretInput from './SecretInput';
@@ -39,7 +40,7 @@ export default function ChangePasswordModal({ onClose, showToast }) {
         <div className="pwm-ttl">비밀번호 변경</div>
         {done ? (
           <>
-            <div className="pwm-ok">✅ 비밀번호가 변경되었어요. 다음 로그인부터 새 비밀번호를 사용해주세요.</div>
+            <div className="pwm-ok"><Icon name="check" size={14} /> 비밀번호가 변경되었어요. 다음 로그인부터 새 비밀번호를 사용해주세요.</div>
             <button className="btn btn-p" onClick={onClose}>확인</button>
           </>
         ) : (
