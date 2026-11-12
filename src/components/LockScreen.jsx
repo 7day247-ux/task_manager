@@ -1,38 +1,56 @@
 import React, { useState } from 'react';
-import { PASSWORD } from '../utils/constants';
+import { signIn } from '../utils/auth';
 
 export default function LockScreen({ onUnlock }) {
+  const [email, setEmail] = useState('');
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  function checkPw() {
-    if (pw === PASSWORD) {
-      sessionStorage.setItem('auth', '1');
+  async function submit(e) {
+    e.preventDefault();
+    if (!email || !pw || busy) return;
+    setBusy(true);
+    try {
+      await signIn(email.trim(), pw);
       onUnlock();
-    } else {
-      setErr('비밀번호가 틀렸습니다.');
+    } catch {
+      setErr('이메일 또는 비밀번호가 틀렸습니다.');
       setPw('');
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <div className="lock">
-      <div className="lock-box">
+      <form className="lock-box" onSubmit={submit}>
         <div className="lock-logo">📋</div>
         <div className="lock-title">업무 관리</div>
-        <div className="lock-sub">비밀번호를 입력해주세요</div>
+        <div className="lock-sub">로그인해주세요</div>
+        <input
+          className="lock-inp lock-inp-email"
+          type="email"
+          name="email"
+          autoComplete="username"
+          placeholder="이메일"
+          value={email}
+          onChange={e => { setEmail(e.target.value); setErr(''); }}
+        />
         <input
           className="lock-inp"
           type="password"
+          name="password"
+          autoComplete="current-password"
           placeholder="••••••••"
-          maxLength={20}
           value={pw}
           onChange={e => { setPw(e.target.value); setErr(''); }}
-          onKeyDown={e => e.key === 'Enter' && checkPw()}
         />
         <div className="lock-err">{err}</div>
-        <button className="lock-btn" onClick={checkPw}>입력</button>
-      </div>
+        <button className="lock-btn" type="submit" disabled={busy}>
+          {busy ? '확인 중…' : '로그인'}
+        </button>
+      </form>
     </div>
   );
 }

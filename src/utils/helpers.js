@@ -1,15 +1,27 @@
 import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT } from './constants';
+import { getAccessToken, signOut } from './auth';
 
 export async function api(path, opts = {}) {
+  const token = await getAccessToken();
+  if (!token) {
+    signOut();
+    window.location.reload();
+    throw new Error('로그인이 필요합니다.');
+  }
   const headers = {
     apikey: SB_KEY,
-    Authorization: 'Bearer ' + SB_KEY,
+    Authorization: 'Bearer ' + token,
     'Content-Type': 'application/json',
     ...(opts.headers || {}),
   };
   const fo = { method: opts.method || 'GET', headers };
   if (opts.body) fo.body = opts.body;
   const res = await fetch(SB_URL + '/rest/v1/' + path, fo);
+  if (res.status === 401) {
+    signOut();
+    window.location.reload();
+    throw new Error('로그인이 만료되었습니다.');
+  }
   if (!res.ok) throw new Error(await res.text());
   const t = await res.text();
   return t ? JSON.parse(t) : null;
