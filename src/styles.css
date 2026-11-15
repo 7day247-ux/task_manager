@@ -641,3 +641,57 @@ body{letter-spacing:-.01em;}
 .donut-bg{stroke:#EDEDED;}
 .ig-i{border-color:#E3E3E3;}
 .it-btn{border-radius:999px;}
+
+/* ─── 출퇴근 ─── */
+.cm{max-width:560px;}
+.cm .ph{align-items:center;margin-bottom:16px;}
+.cm-date{font-family:inherit;font-size:14px;border:1px solid #E3E3E3;border-radius:999px;padding:7px 12px;background:#FFFFFF;color:#111111;}
+.cm-seg{display:flex;background:#E3E3E3;border-radius:999px;padding:3px;gap:3px;margin-bottom:12px;}
+.cm-seg button{flex:1;border:0;background:transparent;font:500 14px 'Inter Tight','Noto Sans KR',sans-serif;color:#8A8A8A;padding:9px 0;border-radius:999px;cursor:pointer;}
+.cm-seg button.on{background:#111111;color:#FFFFFF;}
+.cm-hero{background:#111111;color:#FFFFFF;border-radius:18px;padding:18px 20px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.cm-hero-lab{font-size:12px;color:#BDBDBD;}
+.cm-hero-big{font-size:46px;font-weight:400;letter-spacing:-.045em;line-height:1;margin-top:8px;color:#FF7A1A;font-variant-numeric:tabular-nums;}
+.cm-hero-sub{font-size:12px;color:#D9D9D9;text-align:right;line-height:1.6;}
+.cm-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.cm-card{background:#FFFFFF;border:1px solid #E3E3E3;border-radius:18px;padding:14px 16px;margin-bottom:12px;}
+.cm-h{font-size:13px;font-weight:600;margin-bottom:8px;}
+.cm-p{font-size:13px;line-height:1.6;margin-bottom:10px;}
+.cm-p b{color:#FF7A1A;font-weight:600;}
+.cm-mute{color:#8A8A8A;}
+.cm-small{font-size:11px;margin:10px 0 0;}
+.cm-stops{list-style:none;position:relative;}
+.cm-stops::before{content:"";position:absolute;left:5px;top:18px;bottom:18px;width:2px;background:#E3E3E3;}
+.cm-stop{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:9px 0 9px 22px;border-bottom:1px solid #F0F0F0;}
+.cm-stop:last-child{border-bottom:0;}
+.cm-stop::before{content:"";position:absolute;left:0;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#FFFFFF;border:2px solid #C8C8C8;box-sizing:border-box;}
+.cm-stop.done::before{background:#111111;border-color:#111111;}
+.cm-stop.key::before{border-color:#FF7A1A;}
+.cm-stop.key.done::before{background:#FF7A1A;border-color:#FF7A1A;}
+.cm-stop.skip{opacity:.45;}
+.cm-stop-main{min-width:0;display:flex;flex-direction:column;}
+.cm-stop-name{font-size:14px;font-weight:500;}
+.cm-stop.key .cm-stop-name{font-weight:600;}
+.cm-stop-note{font-size:11px;color:#8A8A8A;}
+.cm-stop-time{font-size:17px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;min-width:52px;text-align:right;}
+.cm-stop-time.pred{color:#A8A8A8;}
+.cm-stop-act{display:flex;gap:4px;align-items:center;justify-content:flex-end;}
+.cm-time{font-family:inherit;font-size:13px;border:1px solid #E3E3E3;border-radius:8px;padding:5px 4px;width:88px;background:#F6F6F6;color:#111111;min-height:32px;}
+.cm-now{border:0;background:#FF7A1A;color:#FFFFFF;font:600 12px 'Inter Tight','Noto Sans KR',sans-serif;border-radius:999px;padding:7px 11px;cursor:pointer;white-space:nowrap;}
+.cm-clear,.cm-skip{border:1px solid #E3E3E3;background:#FFFFFF;color:#8A8A8A;border-radius:999px;cursor:pointer;font:500 11px 'Inter Tight','Noto Sans KR',sans-serif;padding:6px 9px;display:inline-flex;align-items:center;white-space:nowrap;}
+.cm-cut,.cm-hist{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;}
+.cm-cut th,.cm-hist th{font-size:11px;font-weight:500;color:#8A8A8A;text-align:left;padding:4px 6px;white-space:nowrap;}
+.cm-cut td,.cm-hist td{font-size:14px;padding:8px 6px;border-top:1px solid #F0F0F0;white-space:nowrap;}
+.cm-cut tr.on td{background:#FFF1E6;font-weight:600;}
+.cm-hist td{font-size:13px;}
+.cm-hist tbody tr{cursor:pointer;}
+.cm-scroll{overflow-x:auto;}
+.cm-tips{padding-left:18px;font-size:13px;line-height:1.7;}
+.cm-note{width:100%;font-family:inherit;font-size:13px;border:1px solid #E3E3E3;border-radius:10px;padding:8px 10px;background:#F6F6F6;resize:vertical;color:#111111;}
+.cm-now:focus-visible,.cm-clear:focus-visible,.cm-skip:focus-visible,.cm-seg button:focus-visible{outline:2px solid #FF7A1A;outline-offset:2px;}
+@media(max-width:768px){
+  .cm-hero-big{font-size:40px;}
+  .cm-stop{grid-template-columns:minmax(0,1fr) auto;row-gap:6px;}
+  .cm-stop-act{grid-column:1/-1;justify-content:flex-end;}
+  .cm-time{width:96px;}
+}

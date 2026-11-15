@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { id: 'meetings',   icon: 'notes', label: '회의록' },
   { id: 'completed',  icon: 'trophy', label: '완료' },
   { id: 'gallery',    icon: 'images', label: '갤러리' },
+  { id: 'commute',    icon: 'train', label: '출퇴근' },
   { id: 'reflection', icon: 'sprout', label: 'Reflection' },
 ];
 
