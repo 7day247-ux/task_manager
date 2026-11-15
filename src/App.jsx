@@ -13,6 +13,7 @@ import MeetingNotes from './pages/MeetingNotes';
 import CompletedWork from './pages/CompletedWork';
 import Reflection from './pages/Reflection';
 import Gallery from './pages/Gallery';
+import Commute from './pages/Commute';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useAppData } from './hooks/useAppData';
 import { printTasksHtml } from './utils/helpers';
@@ -25,6 +26,7 @@ const PATH_TO_PAGE = {
   '/completed':  'completed',
   '/gallery':    'gallery',
   '/reflection': 'reflection',
+  '/commute':    'commute',
 };
 const PAGE_TO_PATH = {
   dashboard:  '/',
@@ -34,6 +36,7 @@ const PAGE_TO_PATH = {
   completed:  '/completed',
   gallery:    '/gallery',
   reflection: '/reflection',
+  commute:    '/commute',
 };
 
 function AppInner() {
@@ -118,6 +121,9 @@ function AppInner() {
           } />
           <Route path="/gallery" element={
             <Gallery images={images} projects={projects} tasks={tasks} onReload={reloadImages} showToast={showToast} />
+          } />
+          <Route path="/commute" element={
+            <Commute showToast={showToast} />
           } />
           <Route path="/reflection" element={
             <Reflection showToast={showToast} />

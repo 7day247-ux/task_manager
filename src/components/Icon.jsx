@@ -3,7 +3,7 @@ import {
   House, ListChecks, CalendarDays, NotebookPen, Trophy, Images, Sprout, Printer, KeyRound, LogOut,
   Package, Palette, Signpost, FolderKanban, ClipboardList, Users, Car, Luggage, Camera, UtensilsCrossed,
   Phone, Mail, Lightbulb, Pin, Frown, Eye, MessageCircle, Lock, X, Check, TriangleAlert, PartyPopper,
-  Search, FileText, User, Palmtree, CircleAlert, CalendarRange, Clock,
+  Search, FileText, User, Palmtree, CircleAlert, CalendarRange, Clock, TrainFront,
 } from 'lucide-react';
 
 const MAP = {
@@ -13,7 +13,7 @@ const MAP = {
   users: Users, car: Car, luggage: Luggage, camera: Camera, utensils: UtensilsCrossed,
   phone: Phone, mail: Mail, bulb: Lightbulb, pin: Pin, frown: Frown, eye: Eye, message: MessageCircle,
   lock: Lock, x: X, check: Check, alert: TriangleAlert, party: PartyPopper, search: Search,
-  file: FileText, user: User, palm: Palmtree, urgent: CircleAlert, week: CalendarRange, clock: Clock,
+  file: FileText, user: User, palm: Palmtree, urgent: CircleAlert, week: CalendarRange, clock: Clock, train: TrainFront,
 };
 
 // 앱 전체에서 쓰는 선 아이콘. 글자 색을 그대로 따른다.
