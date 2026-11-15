@@ -18,6 +18,7 @@ const AM = [
   { k: 'office',    name: '사무실 도착', key: true },
 ];
 const PM = [
+  { k: 'eLeave',   name: '사무실 나옴' },
   { k: 'eTrain',   name: '지하철 탑승' },
   { k: 'eOff',     name: '지하철 하차' },
   { k: 'eBus',     name: '버스 탑승' },
@@ -30,12 +31,13 @@ const DEFAULT = {
   'wake>shower': 28, 'shower>breakfast': 12, 'breakfast>hair': 13, 'shower>hair': 16,
   'hair>makeup': 8, 'makeup>leave': 7, 'leave>suji': 8,
   'train>gangnam': 27, 'gangnam>exit5': 4, 'signal>office': 3,
-  'eTrain>eOff': 27, 'eOff>eBus': 3, 'eBus>eBusOff': 6, 'eBusOff>eHome': 3,
+  'eLeave>eTrain': 10, 'eTrain>eOff': 27, 'eOff>eBus': 3, 'eBus>eBusOff': 6, 'eBusOff>eHome': 3,
 };
 // 지하철과 신호등은 시간표처럼 정해진 칸으로 계산한다.
 const TRAIN = { anchor: 7 * 60 + 28, every: 5, minWait: 1 };      // 7:28, 7:33, 7:38, 7:43 …
 const SIGNAL = { anchor: 8 * 60 + 4, every: 3.5, walk: 1.5 };      // 8:04:00, 8:07:30 … (추정)
 const PM_TRAINS = ['18:43', '18:48'];
+const PM_TRAIN = { anchor: 18 * 60 + 43, every: 5 };               // 6:43, 6:48 … (거의 고정)
 
 // ─── 시간 도우미 ─────────────────────────────────────────
 const toMin = s => { const m = /^(\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(s || ''); return m ? +m[1] * 60 + +m[2] + (m[3] ? +m[3] / 60 : 0) : null; };
@@ -79,6 +81,7 @@ const dur = (M, a, b) => (M[a + '>' + b] || { v: 5 }).v;
 
 function step(M, t, a, b) {
   if (b === 'train') return nextGrid(t + TRAIN.minWait, TRAIN.anchor, TRAIN.every);
+  if (b === 'eTrain') return nextGrid(t + dur(M, a, b), PM_TRAIN.anchor, PM_TRAIN.every);
   if (b === 'signal') return nextGrid(t + SIGNAL.walk, SIGNAL.anchor, SIGNAL.every);
   if (a === 'signal') return Math.floor(t) + dur(M, a, b);
   return t + dur(M, a, b);
@@ -161,7 +164,7 @@ export default function Commute({ showToast }) {
   const amAny = AM.some(r => cur.times[r.k]);
   const pmAny = PM.some(r => cur.times[r.k]);
   const am = predict(AM, cur.times, M, amAny ? null : typicalWake);
-  const pm = predict(PM, cur.times, M, pmAny ? null : toMin(PM_TRAINS[0]));
+  const pm = predict(PM, cur.times, M, pmAny ? null : 18 * 60 + 30);
 
   // 화장 끝 → 사무실: 지난 기록
   const keySpan = useMemo(() => {
@@ -205,7 +208,7 @@ export default function Commute({ showToast }) {
         <div>
           <div className="cm-hero-lab">
             {goal && goal.actual ? (mode === 'am' ? '사무실 도착' : '집 도착')
-              : example ? (mode === 'am' ? fmt(typicalWake) + '에 일어나면 사무실 도착' : '6:43 열차를 타면 집 도착')
+              : example ? (mode === 'am' ? fmt(typicalWake) + '에 일어나면 사무실 도착' : '6:30에 나오면 집 도착')
               : (mode === 'am' ? '사무실 도착 예상' : '집 도착 예상')}
           </div>
           <div className="cm-hero-big">{goal ? fmt(goal.v) : '–'}</div>
@@ -213,6 +216,7 @@ export default function Commute({ showToast }) {
         <div className="cm-hero-sub">
           {mode === 'am' && am.train && <>{fmt(am.train.v)} 지하철<br /></>}
           {mode === 'am' && am.makeup && !am.makeup.actual && <>화장 {fmt(am.makeup.v)}까지</>}
+          {mode === 'pm' && pm.eTrain && <>{fmt(pm.eTrain.v)} 지하철<br /></>}
           {mode === 'pm' && pm.eBus && <>{fmt(pm.eBus.v)} 버스</>}
         </div>
       </div>
@@ -241,7 +245,7 @@ export default function Commute({ showToast }) {
                     {skip ? '오늘은 건너뜀'
                       : diff != null ? (diff === 0 ? '예상과 같음' : '예상보다 ' + Math.abs(diff) + '분 ' + (diff > 0 ? '늦음' : '빠름'))
                       : r.k === 'signal' ? '추정 · 3분 30초마다'
-                      : r.k === 'train' ? '5분 간격 시간표'
+                      : r.k === 'train' || r.k === 'eTrain' ? '5분 간격 시간표'
                       : ''}
                   </span>
                 </div>
@@ -340,12 +344,12 @@ function History({ logs, M, onPick }) {
       {!!list.length && (
         <div className="cm-scroll">
           <table className="cm-hist">
-            <thead><tr><th>날짜</th><th>기상</th><th>화장</th><th>출발</th><th>지하철</th><th>사무실</th><th>퇴근 열차</th><th>집</th></tr></thead>
+            <thead><tr><th>날짜</th><th>기상</th><th>화장</th><th>출발</th><th>지하철</th><th>사무실</th><th>퇴근</th><th>퇴근 열차</th><th>집</th></tr></thead>
             <tbody>
               {list.map(l => (
                 <tr key={l.log_date} onClick={() => onPick(l.log_date)}>
                   <td>{dayLabel(l.log_date)}</td>
-                  {['wake', 'makeup', 'leave', 'train', 'office', 'eTrain', 'eHome'].map(k => <td key={k}>{l.times[k] ? fmt(toMin(l.times[k])) : '·'}</td>)}
+                  {['wake', 'makeup', 'leave', 'train', 'office', 'eLeave', 'eTrain', 'eHome'].map(k => <td key={k}>{l.times[k] ? fmt(toMin(l.times[k])) : '·'}</td>)}
                 </tr>
               ))}
             </tbody>
