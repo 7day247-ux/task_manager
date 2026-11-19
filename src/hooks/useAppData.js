@@ -11,6 +11,7 @@ export function useAppData() {
   const [images, setImages]     = useState([]);
   const [products, setProducts] = useState([]);
   const [pEvents, setPEvents]   = useState([]);
+  const [orders, setOrders]     = useState([]);
   const [toast, setToast]      = useState({ msg: '', err: false, show: false });
 
   const showToast = useCallback((msg, err = false) => {
@@ -25,7 +26,7 @@ export function useAppData() {
   const loadAll = useCallback(async () => {
     showToast('불러오는 중...');
     try {
-      const [td, md, mid, ld, ed, pd, imd, prd, pev] = await Promise.all([
+      const [td, md, mid, ld, ed, pd, imd, prd, pev, ood] = await Promise.all([
         api('tasks?order=created_at.desc'),
         api('meetings?order=meet_date.desc'),
         api('meeting_items?order=created_at.asc'),
@@ -35,6 +36,7 @@ export function useAppData() {
         api('images?order=created_at.desc').catch(() => []),
         api('products?order=id.asc').catch(() => []),
         api('product_events?order=event_date.asc,id.asc').catch(() => []),
+        api('outsource_orders?order=id.asc').catch(() => []),
       ]);
       setTasks((td || []).map(mapTask));
       setMeetings((md || []).map(m => ({ ...m, attendees: m.attendees || '', meet_date: String(m.meet_date || '').trim() })));
@@ -45,6 +47,7 @@ export function useAppData() {
       setImages(imd || []);
       setProducts(prd || []);
       setPEvents(pev || []);
+      setOrders(ood || []);
       hideToast();
     } catch (e) {
       showToast('불러오기 실패: ' + e.message, true);
@@ -89,6 +92,7 @@ export function useAppData() {
     images,
     products,
     pEvents,
+    orders,
     reloadImages,
     toast,
     showToast, hideToast,

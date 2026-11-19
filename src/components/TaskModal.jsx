@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from './Icon';
 import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL, ITEM_SUGGEST, POSM_LABELS, PRODUCT_LINE } from '../utils/constants';
 import ImageGrid, { UploadButton } from './ImageGrid';
+import OutsourceFields, { EMPTY_ORDER } from './OutsourceFields';
 import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
 
 const INIT_TASK = {
@@ -10,13 +11,15 @@ const INIT_TASK = {
   items: [], proposalCount: 0, finalType: '', projectId: null,
 };
 
-export default function TaskModal({ task, tasks, projects = [], images = [], onReloadImages, defaultCat, onClose, onSaved, showToast }) {
+export default function TaskModal({ task, tasks, projects = [], images = [], products = [], orders = [], onOpenDoc, onReloadImages, defaultCat, onClose, onSaved, showToast }) {
   const isEdit = !!task;
   const [form, setForm]     = useState(() => (!task && defaultCat ? { ...INIT_TASK, cat: defaultCat } : INIT_TASK));
   const [csteps, setCsteps] = useState([]);
   const [ctrVal, setCtrVal] = useState(0);
   const [newProjects, setNewProjects] = useState([]);
   const [np, setNp] = useState(null); // 새 제품 입력 중일 때 { name, line, kind }
+  const savedOrder = task ? orders.find(o => String(o.task_id) === String(task.id)) : null;
+  const [order, setOrder] = useState(() => (savedOrder ? { ...EMPTY_ORDER, ...savedOrder } : { ...EMPTY_ORDER }));
 
   useEffect(() => {
     if (task) {
@@ -48,8 +51,8 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
 
   const catSteps = getSteps(form.cat);
   const isCust   = isCustomCat(form.cat);
-  const showEdit  = form.cat !== 'project';
-  const showVari  = form.cat !== 'project';
+  const showEdit  = form.cat !== 'project' && form.cat !== 'outsource';
+  const showVari  = form.cat !== 'project' && form.cat !== 'outsource';
 
   // ── 작업 구성 (종류 + 개수) ──
   const allProjects = [...projects, ...newProjects];
@@ -173,10 +176,18 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
     onClose();
     showToast('저장 중...');
     try {
+      let taskId = task ? task.id : null;
       if (task) {
         await api('tasks?id=eq.' + task.id, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(toRow(data)) });
       } else {
-        await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
+        const res = await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
+        taskId = (Array.isArray(res) ? res[0] : res || {}).id;
+      }
+      if (form.cat === 'outsource' && taskId) {
+        const { id: oid, created_at, ...rest } = order;
+        const body = JSON.stringify({ ...rest, task_id: taskId, updated_at: new Date().toISOString() });
+        if (oid) await api('outsource_orders?id=eq.' + oid, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body });
+        else await api('outsource_orders', { method: 'POST', headers: { Prefer: 'return=minimal' }, body });
       }
       await onSaved();
     } catch (e) { showToast('저장 실패: ' + e.message, true); }
@@ -243,6 +254,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
                 <option value="pkg">패키지 디자인</option>
                 <option value="inhouse">사내 디자인</option>
                 <option value="posm">POSM</option>
+                <option value="outsource">외주</option>
                 <option value="project">프로젝트</option>
                 <option value="general">일반 업무</option>
               </select>
@@ -306,6 +318,15 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
               )}
               <div className="fhint">같은 제품의 파우치·볼케이스·외박스를 묶어두면 완료 현황에서 제품 1개의 리드타임으로 볼 수 있어요.</div>
             </div>
+          )}
+
+          {form.cat === 'outsource' && (
+            <OutsourceFields
+              value={order}
+              onChange={setOrder}
+              products={products}
+              onOpenDoc={task && savedOrder && onOpenDoc ? () => { onClose(); onOpenDoc(task.id); } : null}
+            />
           )}
 
           {TYPE_LABELS[form.cat] && (
@@ -453,7 +474,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], onR
 
           {form.ttype !== 'edit' && (
             <div className="ss">
-              <div className="st">{isCust ? '할 일 체크리스트' : '패키지 단계 체크리스트'}</div>
+              <div className="st">{isCust ? '할 일 체크리스트' : form.cat === 'outsource' ? '외주 진행 단계' : '패키지 단계 체크리스트'}</div>
               <div>
                 {isCust ? (
                   custSteps.map((it, i) => (

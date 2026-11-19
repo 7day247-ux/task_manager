@@ -32,6 +32,21 @@ export const VID_STEPS = [
   '최종 완료',
 ];
 
+// 외주(디자인 업체 의뢰) 진행 단계
+export const OUT_STEPS = [
+  '업체 선정·견적',
+  '품의서 결재',
+  '의뢰서 전달 (마케터)',
+  '1차 시안 수령',
+  '수정·피드백',
+  '최종 파일 수령',
+  '인쇄소 전달',
+  '정산 완료',
+];
+
+export const OUT_APPROVAL = ['작성 전', '결재 올림', '승인', '정산 완료'];
+export const OUT_ITEMS = ['포장', '외박스', '볼케이스'];
+
 export const STATUS = {
   waiting:    { l: '대기',   c: '#C8C8C8' },
   inprogress: { l: '진행중', c: '#FF7A1A' },
@@ -43,6 +58,7 @@ export const CAT = {
   pkg:     { l: '패키지',   i: 'package',   b: 'b-pkg' },
   inhouse: { l: '사내 디자인', i: 'palette', b: 'b-vid' },
   posm:    { l: 'POSM',     i: 'signpost',  b: 'b-posm' },
+  outsource: { l: '외주',   i: 'handshake', b: 'b-out' },
   project: { l: '프로젝트', i: 'folder',    b: 'b-prj' },
   general: { l: '일반',     i: 'clipboard', b: 'b-gen' },
 };
