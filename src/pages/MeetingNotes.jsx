@@ -1,13 +1,30 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon';
 import { MT_TYPE } from '../utils/constants';
 import MeetingModal from '../components/MeetingModal';
+import ProductBoard from '../components/ProductBoard';
+import ProductModal from '../components/ProductModal';
 import { today } from '../utils/helpers';
+import { statusClass } from '../utils/products';
 
-export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showToast }) {
+export default function MeetingNotes({ meetings, mtItems, tasks, products = [], pEvents = [], projects = [], onReload, showToast }) {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [editMeeting, setEditMeeting] = useState(undefined); // undefined = closed, null = new, obj = edit
+  const [newProduct, setNewProduct] = useState(false);
+  const [view, setView] = useState(() => {
+    try { return sessionStorage.getItem('mt-view') || 'products'; } catch { return 'products'; }
+  });
   const todayStr = today();
+  const pById = new Map(products.map(p => [String(p.id), p]));
+  const openProduct = item => { if (item.product_id && pById.has(String(item.product_id))) navigate('/meetings/p/' + item.product_id); };
+
+  function pickView(v) {
+    setView(v);
+    setSearch('');
+    try { sessionStorage.setItem('mt-view', v); } catch { /* 저장 안 돼도 괜찮음 */ }
+  }
 
   function printMtDate(ds) {
     ds = String(ds).trim();
@@ -50,20 +67,34 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
     <div className="page on">
       <div className="ph">
         <div>
-          <div className="pt">회의록 &amp; 메모</div>
-          <div className="ps">날짜별 기록 관리</div>
+          <div className="pt">회의록</div>
+          <div className="ps">{view === 'products' ? '제품별 진행 상황과 주간 변화' : '날짜별 회의 기록'}</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <input className="fi" placeholder="검색" value={search}
-            onChange={e => setSearch(e.target.value)} style={{ width: 200, fontSize: 13 }} />
+          {view === 'log' && (
+            <input className="fi" placeholder="검색" value={search}
+              onChange={e => setSearch(e.target.value)} style={{ width: 160, fontSize: 13 }} />
+          )}
           <button className="btn btn-p" onClick={() => setEditMeeting(null)}>
             <span>+</span><span className="hide-mobile"> 새 기록</span>
           </button>
         </div>
       </div>
 
+      <div className="cm-seg mt-seg" role="tablist" aria-label="보기 방식">
+        <button role="tab" aria-selected={view === 'products'} className={view === 'products' ? 'on' : ''} onClick={() => pickView('products')}>제품별</button>
+        <button role="tab" aria-selected={view === 'log'} className={view === 'log' ? 'on' : ''} onClick={() => pickView('log')}>회의록</button>
+      </div>
+
+      {view === 'products' && (
+        <ProductBoard
+          meetings={meetings} mtItems={mtItems} products={products} pEvents={pEvents}
+          onReload={onReload} showToast={showToast} onNewProduct={() => setNewProduct(true)}
+        />
+      )}
+
       {/* Timeline view */}
-      {!search && (
+      {view === 'log' && !search && (
         <div id="mt-timeline">
           {!meetings.length ? (
             <div className="mt-empty">기록이 없습니다.<br /><span style={{ fontSize: 12 }}>+ 새 기록으로 추가해보세요</span></div>
@@ -108,8 +139,8 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                                 const tgs = item.tags ? item.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
                                 const lt  = item.task_id ? tasks.find(t => t.id === item.task_id) : null;
                                 return (
-                                  <tr key={item.id}>
-                                    <td style={{ fontWeight: 500 }}>{item.title || ''}</td>
+                                  <tr key={item.id} className={item.product_id ? 'mt-linked' : ''} onClick={() => openProduct(item)}>
+                                    <td style={{ fontWeight: 500 }}>{item.title || ''}{item.status && <span className={statusClass(item.status)} style={{ marginLeft: 6 }}>{item.status}</span>}</td>
                                     <td style={{ color: '#555555' }}>{item.content || ''}</td>
                                     <td>{tgs.map((t, i) => <span key={i} className="mt-tag">#{t}</span>)}</td>
                                     <td style={{ color: '#8A8A8A' }}>{item.due_date ? item.due_date.slice(5).replace('-', '.') : ''}</td>
@@ -127,8 +158,17 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
                             const tgs = item.tags ? item.tags.split(',').map(t => t.trim()).filter(Boolean) : [];
                             const lt  = item.task_id ? tasks.find(t => t.id === item.task_id) : null;
                             return (
-                              <div key={item.id} className="mt-item-card">
-                                {item.title && <div className="mt-item-title">{item.title}</div>}
+                              <div key={item.id} className={'mt-item-card' + (item.product_id ? ' mt-linked' : '')}
+                                onClick={() => openProduct(item)}
+                                role={item.product_id ? 'button' : undefined} tabIndex={item.product_id ? 0 : undefined}
+                                onKeyDown={e => { if (e.key === 'Enter') openProduct(item); }}>
+                                {item.title && (
+                                  <div className="mt-item-title">
+                                    <span>{item.title}</span>
+                                    {item.status && <span className={statusClass(item.status)}>{item.status}</span>}
+                                    {item.product_id && <Icon name="chev" size={15} className="pb-chev" />}
+                                  </div>
+                                )}
                                 {item.content && <div className="mt-item-content">{item.content}</div>}
                                 <div className="mt-item-meta">
                                   {tgs.length > 0 && <div>{tgs.map((t, i) => <span key={i} className="mt-tag">#{t}</span>)}</div>}
@@ -153,7 +193,7 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
       )}
 
       {/* Search table view */}
-      {search && (
+      {view === 'log' && search && (
         <div className="ttbl">
           <table>
             <thead>
@@ -195,8 +235,19 @@ export default function MeetingNotes({ meetings, mtItems, tasks, onReload, showT
           meeting={editMeeting}
           mtItems={mtItems}
           tasks={tasks}
+          products={products}
           onClose={() => setEditMeeting(undefined)}
           onSaved={async () => { setEditMeeting(undefined); await onReload(); }}
+          showToast={showToast}
+        />
+      )}
+
+      {newProduct && (
+        <ProductModal
+          product={null}
+          projects={projects}
+          onClose={() => setNewProduct(false)}
+          onSaved={async id => { setNewProduct(false); await onReload(); navigate('/meetings/p/' + id); }}
           showToast={showToast}
         />
       )}
