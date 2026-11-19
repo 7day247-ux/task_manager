@@ -114,7 +114,7 @@ export default function CompletedWork({ tasks, events = [], projects = [], onOpe
                 </div>
                 <div className={'pd-lead' + (s.allDone ? '' : ' ing')}>
                   <b>{fmtLead(s.lead)}</b>
-                  <span>{s.allDone ? '완료' : '경과'}</span>
+                  <span>{s.allDone ? '완료' : s.paused ? '멈춤 · 경과' : '경과'}</span>
                 </div>
               </div>
             ))}

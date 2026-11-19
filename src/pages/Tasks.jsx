@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Icon from '../components/Icon';
 import { CAT } from '../utils/constants';
-import { isCustomCat, getSteps, pct } from '../utils/helpers';
+import { isCustomCat, getSteps, pct, openPause, pausedWorkdays, elapsedDays } from '../utils/helpers';
 import TaskTable from '../components/TaskTable';
 
 const VIEWS = [
@@ -9,18 +9,52 @@ const VIEWS = [
   { id: 'due', label: '마감일순' },
   { id: 'req', label: '요청일순' },
   { id: 'all', label: '전체 목록' },
+  { id: 'hold', label: '홀드' },
+  { id: 'drop', label: '드롭' },
 ];
 
+const md = d => (d ? d.slice(5).replace('-', '.') : '');
+
 export default function Tasks({ tasks, onOpenTask, filterStatus }) {
-  const [tv, setTv] = useState(filterStatus ? 'all' : 'cat');
+  const [tv, setTv] = useState(filterStatus === 'hold' ? 'hold' : filterStatus ? 'all' : 'cat');
 
   const active = filterStatus === 'asap'
     ? tasks.filter(t => t.asap && t.status !== 'done')
     : filterStatus
       ? tasks.filter(t => t.status === filterStatus)
-      : tasks.filter(t => t.status !== 'done');
+      : tasks.filter(t => t.status !== 'done' && t.status !== 'drop');
 
   function renderContent() {
+    if (tv === 'hold' || tv === 'drop') {
+      const list = tasks
+        .filter(t => t.status === tv)
+        .map(t => ({ t, p: openPause(t) }))
+        .sort((a, b) => ((b.p && b.p.from) || '').localeCompare((a.p && a.p.from) || ''));
+      if (!list.length) return <div className="mt-empty">{tv === 'hold' ? '홀드된 일이 없어요.' : '드롭된 일이 없어요.'}</div>;
+      return (
+        <div className="hd-list">
+          {list.map(({ t, p }) => {
+            const el = elapsedDays(t);
+            const pd = pausedWorkdays(t);
+            return (
+              <button key={t.id} className="hd-row" onClick={() => onOpenTask(t.id)}>
+                <span className="hd-d">{p ? md(p.from) : '—'}<small>{tv === 'hold' ? '홀드' : '드롭'}</small></span>
+                <span className="hd-main">
+                  <span className="hd-name">{t.name}<span className={'bdg ' + (CAT[t.cat] || {}).b}>{(CAT[t.cat] || {}).l}</span></span>
+                  {p && p.reason && <span className="hd-reason">{p.reason}</span>}
+                  <span className="hd-meta">
+                    요청 {md(t.reqDate) || '—'}
+                    {el !== null && <> · 일한 기간 {el === 0 ? '당일' : el + '일'}</>}
+                    {tv === 'hold' && pd > 0 && <> · 멈춘 지 {pd}일</>}
+                  </span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
     if (tv === 'cat') {
       return Object.entries(CAT).map(([key, meta]) => {
         const rows = active.filter(t => t.cat === key);
