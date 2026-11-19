@@ -9,6 +9,8 @@ export function useAppData() {
   const [events, setEvents]    = useState([]);
   const [projects, setProjects] = useState([]);
   const [images, setImages]     = useState([]);
+  const [products, setProducts] = useState([]);
+  const [pEvents, setPEvents]   = useState([]);
   const [toast, setToast]      = useState({ msg: '', err: false, show: false });
 
   const showToast = useCallback((msg, err = false) => {
@@ -23,7 +25,7 @@ export function useAppData() {
   const loadAll = useCallback(async () => {
     showToast('불러오는 중...');
     try {
-      const [td, md, mid, ld, ed, pd, imd] = await Promise.all([
+      const [td, md, mid, ld, ed, pd, imd, prd, pev] = await Promise.all([
         api('tasks?order=created_at.desc'),
         api('meetings?order=meet_date.desc'),
         api('meeting_items?order=created_at.asc'),
@@ -31,6 +33,8 @@ export function useAppData() {
         api('events?order=event_date.asc').catch(() => []),
         api('projects?order=id.asc').catch(() => []),
         api('images?order=created_at.desc').catch(() => []),
+        api('products?order=id.asc').catch(() => []),
+        api('product_events?order=event_date.asc,id.asc').catch(() => []),
       ]);
       setTasks((td || []).map(mapTask));
       setMeetings((md || []).map(m => ({ ...m, attendees: m.attendees || '', meet_date: String(m.meet_date || '').trim() })));
@@ -39,6 +43,8 @@ export function useAppData() {
       setEvents(ed || []);
       setProjects(pd || []);
       setImages(imd || []);
+      setProducts(prd || []);
+      setPEvents(pev || []);
       hideToast();
     } catch (e) {
       showToast('불러오기 실패: ' + e.message, true);
@@ -61,10 +67,14 @@ export function useAppData() {
   }, []);
 
   const reloadMeetings = useCallback(async () => {
-    const [md, mid] = await Promise.all([
+    const [md, mid, prd, pev] = await Promise.all([
       api('meetings?order=meet_date.desc'),
       api('meeting_items?order=created_at.asc'),
+      api('products?order=id.asc').catch(() => []),
+      api('product_events?order=event_date.asc,id.asc').catch(() => []),
     ]);
+    setProducts(prd || []);
+    setPEvents(pev || []);
     setMeetings((md || []).map(m => ({ ...m, attendees: m.attendees || '', meet_date: String(m.meet_date || '').trim() })));
     setMtItems(mid || []);
   }, []);
@@ -77,6 +87,8 @@ export function useAppData() {
     events,
     projects,
     images,
+    products,
+    pEvents,
     reloadImages,
     toast,
     showToast, hideToast,

@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import Calendar from './pages/Calendar';
 import MeetingNotes from './pages/MeetingNotes';
+import ProductDetail from './pages/ProductDetail';
 import CompletedWork from './pages/CompletedWork';
 import Reflection from './pages/Reflection';
 import Gallery from './pages/Gallery';
@@ -48,7 +49,7 @@ function AppInner() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
-    tasks, meetings, mtItems, leaves, events, projects, images, reloadImages,
+    tasks, meetings, mtItems, leaves, events, projects, images, products, pEvents, reloadImages,
     toast, showToast,
     loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
@@ -58,7 +59,8 @@ function AppInner() {
   }, [authed]);
 
   // 현재 URL에서 페이지 ID 계산
-  const curPage = PATH_TO_PAGE[location.pathname] || 'dashboard';
+  const curPage = PATH_TO_PAGE[location.pathname]
+    || (location.pathname.startsWith('/meetings/') ? 'meetings' : 'dashboard');
 
   function goPage(p) {
     setTaskFilter(null);
@@ -114,7 +116,10 @@ function AppInner() {
             <Calendar tasks={tasks} leaves={leaves} events={events} onReloadLeaves={reloadLeaves} onReloadEvents={reloadEvents} showToast={showToast} />
           } />
           <Route path="/meetings" element={
-            <MeetingNotes meetings={meetings} mtItems={mtItems} tasks={tasks} onReload={reloadMeetings} showToast={showToast} />
+            <MeetingNotes meetings={meetings} mtItems={mtItems} tasks={tasks} products={products} pEvents={pEvents} projects={projects} onReload={reloadMeetings} showToast={showToast} />
+          } />
+          <Route path="/meetings/p/:id" element={
+            <ProductDetail meetings={meetings} mtItems={mtItems} products={products} pEvents={pEvents} projects={projects} onReload={reloadMeetings} showToast={showToast} />
           } />
           <Route path="/completed" element={
             <CompletedWork tasks={tasks} events={events} projects={projects} onOpenTask={openTask} />
