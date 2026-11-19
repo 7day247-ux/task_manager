@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Icon from '../components/Icon';
 import ProductModal from '../components/ProductModal';
 import { api, today } from '../utils/helpers';
-import { P_STATUS, EVENT_KINDS, statusClass, fmtMD, weekday, daysFrom, productHistory } from '../utils/products';
+import { P_STATUS, EVENT_KINDS, statusClass, fmtMD, weekday, daysFrom, productHistory, dropInfo } from '../utils/products';
+import { lineTotals, won } from '../utils/outsource';
 
-export default function ProductDetail({ meetings, mtItems, products, pEvents, projects, onReload, showToast }) {
+export default function ProductDetail({ meetings, mtItems, products, pEvents, projects, orders = [], tasks = [], onOpenTask, onReload, showToast }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const todayStr = today();
@@ -35,6 +36,11 @@ export default function ProductDetail({ meetings, mtItems, products, pEvents, pr
     .sort((a, b) => (a.event_date || '9999').localeCompare(b.event_date || '9999') || a.id - b.id);
   const history = productHistory(p.id, meetings, mtItems);
   const project = p.project_id ? projects.find(x => x.id === p.project_id) : null;
+  const drop = dropInfo(p, meetings, mtItems);
+  const myOrders = orders
+    .filter(o => (o.product_ids || []).map(String).includes(String(p.id)))
+    .map(o => ({ o, t: tasks.find(t => String(t.id) === String(o.task_id)) }))
+    .filter(x => x.t);
 
   async function run(fn) {
     setBusy(true);
@@ -57,7 +63,7 @@ export default function ProductDetail({ meetings, mtItems, products, pEvents, pr
 
   function setStatus(s) {
     if (s === p.status) return;
-    run(() => patchProduct({ status: s }));
+    run(() => patchProduct({ status: s, dropped_at: s === '무산' ? todayStr : '' }));
   }
 
   function saveSummary() {
@@ -108,6 +114,40 @@ export default function ProductDetail({ meetings, mtItems, products, pEvents, pr
           ))}
         </div>
       </header>
+
+      {drop.dropped && (
+        <div className="pd-drop">
+          <b>{drop.date ? `${fmtMD(drop.date)} (${weekday(drop.date)}) 최종 드롭` : '드롭'}</b>
+          {drop.where && <span> · {drop.where}</span>}
+          {drop.reason && <div>{drop.reason}</div>}
+        </div>
+      )}
+      {!drop.dropped && drop.revived && (
+        <div className="pd-revived">한 번 드롭됐다가 다시 살아난 제품이에요. 아래 주차별 기록에서 흐름을 볼 수 있어요.</div>
+      )}
+
+      {myOrders.length > 0 && (
+        <section className="pb-card">
+          <div className="pb-sec-t"><Icon name="handshake" size={15} /> 외주</div>
+          {myOrders.map(({ o, t }) => {
+            const { sum } = lineTotals(o.lines);
+            return (
+              <button key={o.id} className="pd-out" onClick={() => onOpenTask && onOpenTask(t.id)}>
+                <span className="pd-out-main">
+                  <span className="pd-out-v">{o.vendor || '업체 미정'}</span>
+                  <span className="pd-out-s">
+                    {o.first_draft_date && <>1차 시안 {fmtMD(o.first_draft_date)}</>}
+                    {o.first_draft_date && o.final_due_date && ' · '}
+                    {o.final_due_date && <>인쇄소 마감 {fmtMD(o.final_due_date)}</>}
+                    {sum.total > 0 && <> · {won(sum.total)}</>}
+                  </span>
+                </span>
+                <span className={'pst ' + (o.approval === '작성 전' ? 'pst-rv' : o.approval === '결재 올림' ? 'pst-wt' : 'pst-go')}>품의 {o.approval}</span>
+              </button>
+            );
+          })}
+        </section>
+      )}
 
       <section className="pb-card">
         <div className="pd-sec-hd">

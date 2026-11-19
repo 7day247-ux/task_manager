@@ -1,4 +1,4 @@
-import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, STATUS, CAT, KR_HOLIDAYS, JOIN_DATE } from './constants';
+import { SB_URL, SB_KEY, PKG_STEPS, VID_STEPS, OUT_STEPS, STATUS, CAT, KR_HOLIDAYS, JOIN_DATE } from './constants';
 import { getAccessToken, signOut } from './auth';
 
 export async function api(path, opts = {}) {
@@ -30,6 +30,7 @@ export async function api(path, opts = {}) {
 export function getSteps(cat) {
   if (cat === 'pkg') return [...PKG_STEPS];
   if (cat === 'video') return [...VID_STEPS];
+  if (cat === 'outsource') return [...OUT_STEPS];
   return [];
 }
 

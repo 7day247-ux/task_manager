@@ -4,13 +4,14 @@ import Icon from './Icon';
 import { api, today } from '../utils/helpers';
 import {
   P_LINES, P_CLOSED, statusClass, fmtMD, weekday, daysFrom,
-  meetingDates, weeklyDigest, sortProducts, nextEvent,
+  meetingDates, weeklyDigest, sortProducts, nextEvent, dropInfo,
 } from '../utils/products';
 
 const FILTERS = [
   { id: 'all', l: '전체' },
   { id: 'mine', l: '내 디자인' },
   ...P_LINES.map(l => ({ id: l, l })),
+  { id: 'drop', l: '드롭' },
 ];
 
 const BRIEF_LIMIT = 6;
@@ -66,7 +67,15 @@ export default function ProductBoard({ meetings, mtItems, products, pEvents, onR
   }
 
   const ql = q.trim().toLowerCase();
+  const dropMap = new Map(products.map(p => [String(p.id), dropInfo(p, meetings, mtItems)]));
+  const dropped = products
+    .filter(p => p.status === '무산')
+    .map(p => ({ p, d: dropMap.get(String(p.id)) }))
+    .filter(x => !ql || x.p.name.toLowerCase().includes(ql))
+    .sort((a, b) => (b.d.date || '').localeCompare(a.d.date || ''));
+  const revived = products.filter(p => p.status !== '무산' && dropMap.get(String(p.id)).revived);
   const visible = products.filter(p => {
+    if (p.status === '무산') return false;
     if (filter === 'mine' && !p.mine) return false;
     if (P_LINES.includes(filter) && p.line !== filter) return false;
     if (ql && !(p.name.toLowerCase().includes(ql) || (p.summary || '').toLowerCase().includes(ql))) return false;
@@ -74,7 +83,7 @@ export default function ProductBoard({ meetings, mtItems, products, pEvents, onR
   });
   const sorted = sortProducts(visible, mtItems, meetings);
   const open = sorted.filter(p => !P_CLOSED.includes(p.status));
-  const closed = sorted.filter(p => P_CLOSED.includes(p.status));
+  const closed = sorted.filter(p => p.status === '완료');
   const groups = filter === 'all' && !ql
     ? P_LINES.map(l => ({ l, list: open.filter(p => p.line === l) })).concat([{ l: '기타', list: open.filter(p => !P_LINES.includes(p.line)) }])
     : [{ l: '', list: open }];
@@ -220,7 +229,37 @@ export default function ProductBoard({ meetings, mtItems, products, pEvents, onR
         </div>
       </div>
 
-      {groups.map(g => g.list.length > 0 && (
+      {filter === 'drop' && (
+        <section className="pb-group">
+          <div className="pb-group-hd"><span>드롭된 제품</span><span className="pb-group-n">{dropped.length}</span></div>
+          {dropped.length === 0 ? <div className="mt-empty">드롭된 제품이 없어요.</div> : (
+            <div className="pb-list">
+              {dropped.map(({ p, d }) => (
+                <button key={p.id} className="pb-row" onClick={() => go(p.id)}>
+                  <span className="pb-drop-d">
+                    {d.date ? <>{fmtMD(d.date)}<small>{d.date.slice(0, 4)}</small></> : <small>날짜 없음</small>}
+                  </span>
+                  <span className="pb-row-main">
+                    <span className="pb-row-name">{p.name}<span className="pb-line">{p.line}</span></span>
+                    {d.reason && <span className="pb-row-sum">{d.reason}</span>}
+                    {d.where && <span className="pb-row-where">{d.where}에서 최종 드롭</span>}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          {revived.length > 0 && (
+            <div className="pb-missing" style={{ borderTop: 0, marginTop: 14 }}>
+              <span className="pb-missing-l">드롭됐다가 다시 살아난 제품</span>
+              <div className="pb-missing-list">
+                {revived.map(p => <button key={p.id} className="pb-pill" onClick={() => go(p.id)}>{p.name} · {p.status}</button>)}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {filter !== 'drop' && groups.map(g => g.list.length > 0 && (
         <section key={g.l || 'all'} className="pb-group">
           {g.l && <div className="pb-group-hd"><span>{g.l}</span><span className="pb-group-n">{g.list.length}</span></div>}
           <div className="pb-list">
@@ -228,14 +267,19 @@ export default function ProductBoard({ meetings, mtItems, products, pEvents, onR
           </div>
         </section>
       ))}
-      {!open.length && !closed.length && (
+      {filter !== 'drop' && !open.length && !closed.length && (
         <div className="mt-empty">해당하는 제품이 없어요.</div>
       )}
 
-      {closed.length > 0 && (
+      {filter !== 'drop' && dropped.length > 0 && (
+        <button className="pb-closed-t" onClick={() => pickFilter('drop')}>
+          드롭된 제품 {dropped.length}개 보기 <Icon name="chev" size={14} />
+        </button>
+      )}
+      {filter !== 'drop' && closed.length > 0 && (
         <section className="pb-group">
           <button className="pb-closed-t" onClick={() => setShowClosed(v => !v)} aria-expanded={showClosed}>
-            무산·완료 {closed.length}개 <Icon name="down" size={14} style={{ transform: showClosed ? 'rotate(180deg)' : 'none' }} />
+            완료 {closed.length}개 <Icon name="down" size={14} style={{ transform: showClosed ? 'rotate(180deg)' : 'none' }} />
           </button>
           {showClosed && (
             <div className="pb-list">

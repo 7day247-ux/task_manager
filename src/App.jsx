@@ -11,6 +11,7 @@ import Tasks from './pages/Tasks';
 import Calendar from './pages/Calendar';
 import MeetingNotes from './pages/MeetingNotes';
 import ProductDetail from './pages/ProductDetail';
+import OutsourceDoc from './pages/OutsourceDoc';
 import CompletedWork from './pages/CompletedWork';
 import Reflection from './pages/Reflection';
 import Gallery from './pages/Gallery';
@@ -49,8 +50,8 @@ function AppInner() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
-    tasks, meetings, mtItems, leaves, events, projects, images, products, pEvents, reloadImages,
-    toast, showToast,
+    tasks, meetings, mtItems, leaves, events, projects, images, products, pEvents, orders, reloadImages,
+    toast, showToast, hideToast,
     loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
 
@@ -60,7 +61,7 @@ function AppInner() {
 
   // 현재 URL에서 페이지 ID 계산
   const curPage = PATH_TO_PAGE[location.pathname]
-    || (location.pathname.startsWith('/meetings/') ? 'meetings' : 'dashboard');
+    || (location.pathname.startsWith('/meetings/') ? 'meetings' : location.pathname.startsWith('/outsource/') ? 'tasks' : 'dashboard');
 
   function goPage(p) {
     setTaskFilter(null);
@@ -119,7 +120,10 @@ function AppInner() {
             <MeetingNotes meetings={meetings} mtItems={mtItems} tasks={tasks} products={products} pEvents={pEvents} projects={projects} onReload={reloadMeetings} showToast={showToast} />
           } />
           <Route path="/meetings/p/:id" element={
-            <ProductDetail meetings={meetings} mtItems={mtItems} products={products} pEvents={pEvents} projects={projects} onReload={reloadMeetings} showToast={showToast} />
+            <ProductDetail meetings={meetings} mtItems={mtItems} products={products} pEvents={pEvents} projects={projects} orders={orders} tasks={tasks} onOpenTask={openTask} onReload={reloadMeetings} showToast={showToast} />
+          } />
+          <Route path="/outsource/:id" element={
+            <OutsourceDoc tasks={tasks} orders={orders} products={products} onOpenTask={openTask} showToast={showToast} hideToast={hideToast} />
           } />
           <Route path="/completed" element={
             <CompletedWork tasks={tasks} events={events} projects={projects} onOpenTask={openTask} />
@@ -146,6 +150,9 @@ function AppInner() {
           tasks={tasks}
           projects={projects}
           images={images}
+          products={products}
+          orders={orders}
+          onOpenDoc={id => navigate('/outsource/' + id)}
           onReloadImages={reloadImages}
           onClose={() => setTaskModal(null)}
           onSaved={async () => { await loadAll(); }}

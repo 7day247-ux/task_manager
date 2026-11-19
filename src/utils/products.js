@@ -125,3 +125,26 @@ export function nextEvent(productId, events, todayStr) {
 export function normName(s) {
   return String(s || '').replace(/[\s·,()/]/g, '').toLowerCase();
 }
+
+// 마지막으로 무산(드롭)된 회의와 그 이유. 회의 기록이 없으면 직접 바꾼 날짜(dropped_at)
+export function dropInfo(product, meetings, items) {
+  const hist = productHistory(product.id, meetings, items).slice().reverse(); // 오래된 것부터
+  let start = null;
+  let everDropped = false;
+  for (const h of hist) {
+    if (h.status === '무산') {
+      everDropped = true;
+      if (!start) start = h;
+    } else if (h.status) {
+      start = null;
+    }
+  }
+  const isDropped = product.status === '무산';
+  if (isDropped) {
+    if (start && (!product.dropped_at || product.dropped_at <= start.meeting.meet_date)) {
+      return { dropped: true, date: start.meeting.meet_date, where: start.meeting.meet_title, reason: start.content || '' };
+    }
+    return { dropped: true, date: product.dropped_at || '', where: '', reason: product.summary || '' };
+  }
+  return { dropped: false, revived: everDropped };
+}
