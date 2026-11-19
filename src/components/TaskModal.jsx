@@ -3,12 +3,12 @@ import Icon from './Icon';
 import { CAT, TYPE_LABELS, TYPE_FIELD_LABEL, ITEM_SUGGEST, POSM_LABELS, PRODUCT_LINE } from '../utils/constants';
 import ImageGrid, { UploadButton } from './ImageGrid';
 import OutsourceFields, { EMPTY_ORDER } from './OutsourceFields';
-import { api, getSteps, isCustomCat, toRow, leadLabel, today } from '../utils/helpers';
+import { api, getSteps, isCustomCat, toRow, leadLabel, today, cleanPauses, openPause, pausedWorkdays, elapsedDays } from '../utils/helpers';
 
 const INIT_TASK = {
   name: '', cat: 'pkg', reqDate: '', dueDate: '', asap: false,
   status: 'waiting', note: '', ttype: 'new', pkgType: '', ecnt: 0, steps: [], doneDate: '', reqTime: '', doneTime: '',
-  items: [], proposalCount: 0, finalType: '', projectId: null,
+  items: [], proposalCount: 0, finalType: '', projectId: null, pauses: [],
 };
 
 export default function TaskModal({ task, tasks, projects = [], images = [], products = [], orders = [], onOpenDoc, onReloadImages, defaultCat, onClose, onSaved, showToast }) {
@@ -30,6 +30,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
         reqTime: task.reqTime || '', doneTime: task.doneTime || '',
         items: task.items || [], proposalCount: task.proposalCount || 0,
         finalType: task.finalType || '', projectId: task.projectId || null,
+        pauses: cleanPauses(task.pauses),
       });
       setCtrVal(task.ecnt || 0);
       if (isCustomCat(task.cat)) {
@@ -172,6 +173,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
       reqTime: form.reqTime, doneTime: form.doneTime,
       items: form.items, proposalCount: form.proposalCount,
       finalType: form.finalType, projectId: form.projectId,
+      pauses: form.pauses,
     };
     onClose();
     showToast('저장 중...');
@@ -215,7 +217,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
       name: task.name + ' (복사)', cat: task.cat, reqDate: today(),
       dueDate: '', asap: false, status: 'waiting', steps: sc,
       note: '', ttype: task.ttype, ecnt: 0, pkgType: task.pkgType || '', doneDate: '', reqTime: '', doneTime: '',
-      items: task.items || [], proposalCount: 0, finalType: '', projectId: task.projectId || null,
+      items: task.items || [], proposalCount: 0, finalType: '', projectId: task.projectId || null, pauses: [],
     };
     try {
       await api('tasks', { method: 'POST', headers: { Prefer: 'return=representation' }, body: JSON.stringify(toRow(data)) });
@@ -231,15 +233,21 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
         <div className="mhd">
           <div>
             <div className="mhd-t">{task ? task.name : '새 태스크'}</div>
-            {task && <div className="mhd-s">{(CAT[task.cat] || { l: '' }).l + ' · ' + { waiting: '대기', inprogress: '진행중', hold: '홀드', done: '완료' }[task.status]}</div>}
+            {task && <div className="mhd-s">{(CAT[task.cat] || { l: '' }).l + ' · ' + { waiting: '대기', inprogress: '진행중', hold: '홀드', drop: '드롭', done: '완료' }[task.status]}</div>}
           </div>
           <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
 
         <div className="mbd">
-          {form.status === 'hold' && (
-            <div className="hban" style={{ display: 'flex' }}><Icon name="alert" size={15} /> 홀드 상태입니다. 비고에 사유를 기록해두세요.</div>
-          )}
+          {(form.status === 'hold' || form.status === 'drop') && (() => {
+            const op = openPause(form);
+            return (
+              <div className="hban" style={{ display: 'flex' }}>
+                <Icon name="alert" size={15} />
+                {form.status === 'hold' ? '홀드' : '드롭'} 상태예요{op ? ` (${op.from.slice(5).replace('-', '.')}부터${op.reason ? ' · ' + op.reason : ''})` : ''}. 아래 상태에서 재개할 수 있어요.
+              </div>
+            );
+          })()}
 
           <div className="two">
             <div className="fg">
@@ -361,16 +369,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
             </div>
           </div>
 
-          <div className="fg">
-            <label className="fl">상태</label>
-            <select className="fs" value={form.status}
-              onChange={e => { set('status', e.target.value); if (e.target.value === 'done' && !form.doneDate) set('doneDate', today()); }}>
-              <option value="waiting">대기</option>
-              <option value="inprogress">진행중</option>
-              <option value="hold">홀드</option>
-              <option value="done">완료</option>
-            </select>
-          </div>
+          <StatusControl form={form} setForm={setForm} />
 
           {form.status === 'done' && (
             <div className="fg">
@@ -549,6 +548,114 @@ function CustomStepInput({ onAdd }) {
         onChange={e => setVal(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter') { onAdd(val.trim()); setVal(''); } }} />
       <button className="btn btn-sm" onClick={() => { onAdd(val.trim()); setVal(''); }}>추가</button>
+    </div>
+  );
+}
+
+const PAUSE_L = { hold: '홀드', drop: '드롭' };
+
+// 상태 바꾸기: 대기·진행중·완료는 바로, 홀드·드롭은 날짜와 사유를 남기고, 멈춘 일은 재개
+function StatusControl({ form, setForm }) {
+  const [pending, setPending] = useState(null); // { type, date, reason } | { type: 'resume', date }
+  const paused = form.status === 'hold' || form.status === 'drop';
+  const op = openPause(form);
+  const pauses = cleanPauses(form.pauses);
+  const pausedN = pausedWorkdays(form, form.status === 'done' ? form.doneDate : '');
+  const el = form.status !== 'done' ? elapsedDays(form) : null;
+
+  function setPlain(st) {
+    setPending(null);
+    setForm(f => ({ ...f, status: st, doneDate: st === 'done' && !f.doneDate ? today() : f.doneDate }));
+  }
+  function confirm() {
+    if (!pending) return;
+    const date = pending.date || today();
+    if (pending.type === 'resume') {
+      setForm(f => ({
+        ...f,
+        status: 'inprogress',
+        pauses: cleanPauses(f.pauses).map(p => (p === op || (op && p.from === op.from && !p.to) ? { ...p, to: date } : p)),
+      }));
+    } else {
+      setForm(f => {
+        // 홀드 중에 드롭하면 홀드는 그날로 닫고 드롭으로 이어 간다
+        const ps = cleanPauses(f.pauses).map(p => (!p.to ? { ...p, to: date } : p));
+        return { ...f, status: pending.type, pauses: [...ps, { type: pending.type, from: date, to: '', reason: (pending.reason || '').trim() }] };
+      });
+    }
+    setPending(null);
+  }
+  function removePause(i) {
+    setForm(f => {
+      const ps = cleanPauses(f.pauses).filter((_, idx) => idx !== i);
+      const stillOpen = ps.some(p => !p.to);
+      return { ...f, pauses: ps, status: !stillOpen && (f.status === 'hold' || f.status === 'drop') ? 'inprogress' : f.status };
+    });
+  }
+
+  return (
+    <div className="fg">
+      <span className="fl">상태</span>
+      <div className="st-row">
+        {[['waiting', '대기'], ['inprogress', '진행중'], ['done', '완료']].map(([k, l]) => (
+          <button type="button" key={k} className={'pd-stat' + (form.status === k ? ' on' : '')} disabled={paused} onClick={() => setPlain(k)}>{l}</button>
+        ))}
+        {paused ? (
+          <span className={'st-now st-' + form.status}>{PAUSE_L[form.status]} 중</span>
+        ) : null}
+      </div>
+      <div className="st-act">
+        {!paused && form.status !== 'done' && (
+          <>
+            <button type="button" className="btn btn-sm" onClick={() => setPending({ type: 'hold', date: today(), reason: '' })}>홀드</button>
+            <button type="button" className="btn btn-sm st-drop" onClick={() => setPending({ type: 'drop', date: today(), reason: '' })}>드롭</button>
+          </>
+        )}
+        {form.status === 'hold' && (
+          <button type="button" className="btn btn-sm st-drop" onClick={() => setPending({ type: 'drop', date: today(), reason: '' })}>드롭</button>
+        )}
+        {paused && (
+          <button type="button" className="btn btn-sm btn-p" onClick={() => setPending({ type: 'resume', date: today() })}>재개</button>
+        )}
+      </div>
+
+      {pending && (
+        <div className="st-form">
+          <div className="st-form-t">{pending.type === 'resume' ? '언제 재개했나요?' : `${PAUSE_L[pending.type]}한 날짜와 사유`}</div>
+          <div className="dt-row">
+            <input className="fi" type="date" value={pending.date} onChange={e => setPending(v => ({ ...v, date: e.target.value }))} aria-label="날짜" />
+            {pending.type !== 'resume' && (
+              <input className="fi" style={{ flex: 2 }} placeholder={pending.type === 'hold' ? '한계비용 대기 등' : '드롭 사유'} value={pending.reason}
+                onChange={e => setPending(v => ({ ...v, reason: e.target.value }))} aria-label="사유" />
+            )}
+          </div>
+          <div className="pd-actions">
+            <button type="button" className="btn btn-sm" onClick={() => setPending(null)}>취소</button>
+            <button type="button" className="btn btn-sm btn-p" onClick={confirm}>{pending.type === 'resume' ? '재개' : PAUSE_L[pending.type]}</button>
+          </div>
+        </div>
+      )}
+
+      {(el !== null || pausedN > 0) && (
+        <div className="fhint">
+          {el !== null && <>경과 {el === 0 ? '당일' : el + '일'}</>}
+          {pausedN > 0 && <> (멈춘 {pausedN}일 제외)</>}
+          {' · 근무일 기준'}
+        </div>
+      )}
+
+      {pauses.length > 0 && (
+        <ul className="st-hist">
+          {pauses.map((p, i) => (
+            <li key={i}>
+              <span className={'st-tag st-' + p.type}>{PAUSE_L[p.type]}</span>
+              <span className="st-d">{p.from.slice(5).replace('-', '.')} → {p.to ? p.to.slice(5).replace('-', '.') + ' 재개' : '지금까지'}</span>
+              {p.reason && <span className="st-r">{p.reason}</span>}
+              <button type="button" className="pd-x" onClick={() => removePause(i)} aria-label="기록 삭제"><Icon name="x" size={13} /></button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

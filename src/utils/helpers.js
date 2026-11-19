@@ -106,7 +106,56 @@ export function toRow(d) {
     proposal_count: d.proposalCount || 0,
     final_type: d.finalType || '',
     project_id: d.projectId || null,
+    pauses: cleanPauses(d.pauses),
   };
+}
+
+// 홀드·드롭 기록: [{ type: 'hold'|'drop', from: 'YYYY-MM-DD', to: '' (아직 멈춤) | 'YYYY-MM-DD'(재개일), reason }]
+export function cleanPauses(v) {
+  let a = v;
+  if (typeof a === 'string') { try { a = JSON.parse(a); } catch { a = []; } }
+  if (!Array.isArray(a)) return [];
+  return a
+    .filter(x => x && x.from && (x.type === 'hold' || x.type === 'drop'))
+    .map(x => ({ type: x.type, from: x.from, to: x.to || '', reason: x.reason || '' }))
+    .sort((x, y) => x.from.localeCompare(y.from));
+}
+
+export function openPause(task) {
+  const ps = cleanPauses(task.pauses);
+  for (let i = ps.length - 1; i >= 0; i--) if (!ps[i].to) return ps[i];
+  return null;
+}
+
+// 그날 일을 멈춘 상태였는지. 멈춘 날과 재개한 날은 일한 날로 본다.
+export function isPausedOn(task, d) {
+  const ds = typeof d === 'string' ? d : ymd(d);
+  return cleanPauses(task.pauses).some(p => p.from < ds && (!p.to || ds < p.to));
+}
+
+// 멈춰 있던 근무일 수 (요청일 이후 ~ 끝 날짜까지)
+export function pausedWorkdays(task, endStr) {
+  const ps = cleanPauses(task.pauses);
+  if (!ps.length) return 0;
+  const end = endStr || task.doneDate || today();
+  let n = 0;
+  for (const p of ps) {
+    const a = parseYmd(p.from);
+    const b = parseYmd(p.to || end);
+    const lim = parseYmd(end);
+    for (const d = new Date(a); ;) {
+      d.setDate(d.getDate() + 1);
+      if (d > lim || (p.to ? d >= b : d > b)) break;
+      if (isWorkday(d) && (!task.reqDate || ymd(d) > task.reqDate)) n++;
+    }
+  }
+  return n;
+}
+
+// 진행 중인 일의 경과 근무일 (홀드·드롭 기간 제외)
+export function elapsedDays(task) {
+  if (!task.reqDate) return null;
+  return leadDays({ ...task, doneDate: task.status === 'done' && task.doneDate ? task.doneDate : today() });
 }
 
 export function mapTask(r) {
@@ -137,6 +186,7 @@ export function mapTask(r) {
     proposalCount: r.proposal_count || 0,
     finalType: r.final_type || '',
     projectId: r.project_id || null,
+    pauses: cleanPauses(r.pauses),
   };
 }
 
@@ -180,13 +230,26 @@ export function projectSummary(project, tasks) {
   const end = allDone && dones.length ? dones[dones.length - 1] : '';
   return {
     project, list, start, end, allDone, required,
-    lead: start ? leadDays({ reqDate: start, doneDate: end || today() }) : null,
+    lead: start ? projectLead(list, start, end || today()) : null,
+    paused: list.length > 0 && list.every(t => t.status === 'hold' || t.status === 'drop'),
     doneCount: list.filter(t => t.status === 'done').length,
     pieces: list.reduce((s, t) => s + itemTotal(t), 0),
     proposals: list.reduce((s, t) => s + (t.proposalCount || 0), 0),
     edits: list.reduce((s, t) => s + (t.ecnt || 0), 0),
     finalType: (list.find(t => t.finalType) || {}).finalType || '',
   };
+}
+
+// 제품의 모든 태스크가 멈춰 있던 날은 빼고 센다
+function projectLead(list, start, end) {
+  const a = parseYmd(start), b = parseYmd(end);
+  if (isNaN(a) || isNaN(b) || b < a) return null;
+  let n = 0;
+  for (const d = new Date(a); d < b;) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkday(d) && !(list.length && list.every(t => isPausedOn(t, d)))) n++;
+  }
+  return n;
 }
 
 function parseYmd(v) {
@@ -208,7 +271,7 @@ export function leadDays(task) {
   let n = 0;
   for (const d = new Date(a); d < b;) {
     d.setDate(d.getDate() + 1);
-    if (isWorkday(d)) n++;
+    if (isWorkday(d) && !isPausedOn(task, d)) n++;
   }
   return n;
 }
