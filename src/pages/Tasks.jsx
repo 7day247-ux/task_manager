@@ -10,6 +10,7 @@ const VIEWS = [
   { id: 'req', label: '요청일순' },
   { id: 'all', label: '전체 목록' },
   { id: 'hold', label: '홀드' },
+  { id: 'handoff', label: '외주 이관' },
   { id: 'drop', label: '드롭' },
 ];
 
@@ -22,15 +23,16 @@ export default function Tasks({ tasks, onOpenTask, filterStatus }) {
     ? tasks.filter(t => t.asap && t.status !== 'done')
     : filterStatus
       ? tasks.filter(t => t.status === filterStatus)
-      : tasks.filter(t => t.status !== 'done' && t.status !== 'drop');
+      : tasks.filter(t => t.status !== 'done' && t.status !== 'drop' && t.status !== 'handoff');
 
   function renderContent() {
-    if (tv === 'hold' || tv === 'drop') {
+    if (tv === 'hold' || tv === 'drop' || tv === 'handoff') {
+      const TL = { hold: '홀드', drop: '드롭', handoff: '외주 이관' }[tv];
       const list = tasks
         .filter(t => t.status === tv)
         .map(t => ({ t, p: openPause(t) }))
         .sort((a, b) => ((b.p && b.p.from) || '').localeCompare((a.p && a.p.from) || ''));
-      if (!list.length) return <div className="mt-empty">{tv === 'hold' ? '홀드된 일이 없어요.' : '드롭된 일이 없어요.'}</div>;
+      if (!list.length) return <div className="mt-empty">{TL}된 일이 없어요.</div>;
       return (
         <div className="hd-list">
           {list.map(({ t, p }) => {
@@ -38,14 +40,14 @@ export default function Tasks({ tasks, onOpenTask, filterStatus }) {
             const pd = pausedWorkdays(t);
             return (
               <button key={t.id} className="hd-row" onClick={() => onOpenTask(t.id)}>
-                <span className="hd-d">{p ? md(p.from) : '—'}<small>{tv === 'hold' ? '홀드' : '드롭'}</small></span>
+                <span className="hd-d">{p ? md(p.from) : '—'}<small>{TL}</small></span>
                 <span className="hd-main">
                   <span className="hd-name">{t.name}<span className={'bdg ' + (CAT[t.cat] || {}).b}>{(CAT[t.cat] || {}).l}</span></span>
                   {p && p.reason && <span className="hd-reason">{p.reason}</span>}
                   <span className="hd-meta">
                     요청 {md(t.reqDate) || '—'}
                     {el !== null && <> · 일한 기간 {el === 0 ? '당일' : el + '일'}</>}
-                    {tv === 'hold' && pd > 0 && <> · 멈춘 지 {pd}일</>}
+                    {tv !== 'drop' && pd > 0 && <> · {tv === 'handoff' ? '이관한 지' : '멈춘 지'} {pd}일</>}
                   </span>
                 </span>
               </button>
