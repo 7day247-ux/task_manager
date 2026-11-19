@@ -956,3 +956,8 @@ input.fi[type=date]{-webkit-appearance:none;appearance:none;min-width:0;max-widt
 .hd-reason{font-size:12px;color:#555555;}
 .hd-meta{font-size:11px;color:#8A8A8A;}
 .cal-ev.drop{opacity:.45;text-decoration:line-through;}
+
+/* 외주 이관 */
+.st-now.st-handoff{background:#ECE8FA;color:#5B47B0;}
+.st-tag.st-handoff{background:#ECE8FA;color:#5B47B0;}
+.st-hand{color:#5B47B0;border-color:#CFC6F0;}

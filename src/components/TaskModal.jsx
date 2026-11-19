@@ -233,18 +233,18 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
         <div className="mhd">
           <div>
             <div className="mhd-t">{task ? task.name : '새 태스크'}</div>
-            {task && <div className="mhd-s">{(CAT[task.cat] || { l: '' }).l + ' · ' + { waiting: '대기', inprogress: '진행중', hold: '홀드', drop: '드롭', done: '완료' }[task.status]}</div>}
+            {task && <div className="mhd-s">{(CAT[task.cat] || { l: '' }).l + ' · ' + { waiting: '대기', inprogress: '진행중', hold: '홀드', drop: '드롭', handoff: '외주 이관', done: '완료' }[task.status]}</div>}
           </div>
           <button className="xbtn" onClick={onClose} aria-label="닫기"><Icon name="x" size={20} /></button>
         </div>
 
         <div className="mbd">
-          {(form.status === 'hold' || form.status === 'drop') && (() => {
+          {(form.status === 'hold' || form.status === 'drop' || form.status === 'handoff') && (() => {
             const op = openPause(form);
             return (
               <div className="hban" style={{ display: 'flex' }}>
                 <Icon name="alert" size={15} />
-                {form.status === 'hold' ? '홀드' : '드롭'} 상태예요{op ? ` (${op.from.slice(5).replace('-', '.')}부터${op.reason ? ' · ' + op.reason : ''})` : ''}. 아래 상태에서 재개할 수 있어요.
+                {form.status === 'hold' ? '홀드' : form.status === 'drop' ? '드롭' : '외주 이관'} 상태예요{op ? ` (${op.from.slice(5).replace('-', '.')}부터${op.reason ? ' · ' + op.reason : ''})` : ''}. 아래 상태에서 재개할 수 있어요.
               </div>
             );
           })()}
@@ -369,7 +369,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
             </div>
           </div>
 
-          <StatusControl form={form} setForm={setForm} />
+          <StatusControl form={form} setForm={setForm} outTasks={(tasks || []).filter(t => t.cat === 'outsource' && t.status !== 'done' && t.id !== (task && task.id))} onOpenTask={null} />
 
           {form.status === 'done' && (
             <div className="fg">
@@ -552,12 +552,12 @@ function CustomStepInput({ onAdd }) {
   );
 }
 
-const PAUSE_L = { hold: '홀드', drop: '드롭' };
+const PAUSE_L = { hold: '홀드', drop: '드롭', handoff: '외주 이관' };
 
 // 상태 바꾸기: 대기·진행중·완료는 바로, 홀드·드롭은 날짜와 사유를 남기고, 멈춘 일은 재개
-function StatusControl({ form, setForm }) {
+function StatusControl({ form, setForm, outTasks = [], onOpenTask }) {
   const [pending, setPending] = useState(null); // { type, date, reason } | { type: 'resume', date }
-  const paused = form.status === 'hold' || form.status === 'drop';
+  const paused = form.status === 'hold' || form.status === 'drop' || form.status === 'handoff';
   const op = openPause(form);
   const pauses = cleanPauses(form.pauses);
   const pausedN = pausedWorkdays(form, form.status === 'done' ? form.doneDate : '');
@@ -580,7 +580,7 @@ function StatusControl({ form, setForm }) {
       setForm(f => {
         // 홀드 중에 드롭하면 홀드는 그날로 닫고 드롭으로 이어 간다
         const ps = cleanPauses(f.pauses).map(p => (!p.to ? { ...p, to: date } : p));
-        return { ...f, status: pending.type, pauses: [...ps, { type: pending.type, from: date, to: '', reason: (pending.reason || '').trim() }] };
+        return { ...f, status: pending.type, pauses: [...ps, { type: pending.type, from: date, to: '', reason: (pending.reason || '').trim(), ref: pending.type === 'handoff' && pending.ref ? Number(pending.ref) : null }] };
       });
     }
     setPending(null);
@@ -589,7 +589,7 @@ function StatusControl({ form, setForm }) {
     setForm(f => {
       const ps = cleanPauses(f.pauses).filter((_, idx) => idx !== i);
       const stillOpen = ps.some(p => !p.to);
-      return { ...f, pauses: ps, status: !stillOpen && (f.status === 'hold' || f.status === 'drop') ? 'inprogress' : f.status };
+      return { ...f, pauses: ps, status: !stillOpen && (f.status === 'hold' || f.status === 'drop' || f.status === 'handoff') ? 'inprogress' : f.status };
     });
   }
 
@@ -598,7 +598,7 @@ function StatusControl({ form, setForm }) {
       <span className="fl">상태</span>
       <div className="st-row">
         {[['waiting', '대기'], ['inprogress', '진행중'], ['done', '완료']].map(([k, l]) => (
-          <button type="button" key={k} className={'pd-stat' + (form.status === k ? ' on' : '')} disabled={paused} onClick={() => setPlain(k)}>{l}</button>
+          <button type="button" key={k} className={'pd-stat' + (form.status === k ? ' on' : '')} disabled={paused && !(form.status === 'handoff' && k === 'done')} onClick={() => setPlain(k)}>{l}</button>
         ))}
         {paused ? (
           <span className={'st-now st-' + form.status}>{PAUSE_L[form.status]} 중</span>
@@ -608,8 +608,12 @@ function StatusControl({ form, setForm }) {
         {!paused && form.status !== 'done' && (
           <>
             <button type="button" className="btn btn-sm" onClick={() => setPending({ type: 'hold', date: today(), reason: '' })}>홀드</button>
+            <button type="button" className="btn btn-sm st-hand" onClick={() => setPending({ type: 'handoff', date: today(), reason: '', ref: outTasks[0] ? outTasks[0].id : '' })}>외주 이관</button>
             <button type="button" className="btn btn-sm st-drop" onClick={() => setPending({ type: 'drop', date: today(), reason: '' })}>드롭</button>
           </>
+        )}
+        {form.status === 'hold' && (
+          <button type="button" className="btn btn-sm st-hand" onClick={() => setPending({ type: 'handoff', date: today(), reason: '', ref: outTasks[0] ? outTasks[0].id : '' })}>외주 이관</button>
         )}
         {form.status === 'hold' && (
           <button type="button" className="btn btn-sm st-drop" onClick={() => setPending({ type: 'drop', date: today(), reason: '' })}>드롭</button>
@@ -625,10 +629,16 @@ function StatusControl({ form, setForm }) {
           <div className="dt-row">
             <input className="fi" type="date" value={pending.date} onChange={e => setPending(v => ({ ...v, date: e.target.value }))} aria-label="날짜" />
             {pending.type !== 'resume' && (
-              <input className="fi" style={{ flex: 2 }} placeholder={pending.type === 'hold' ? '한계비용 대기 등' : '드롭 사유'} value={pending.reason}
+              <input className="fi" style={{ flex: 2 }} placeholder={pending.type === 'hold' ? '한계비용 대기 등' : pending.type === 'handoff' ? '일정상 외주로 전환 등' : '드롭 사유'} value={pending.reason}
                 onChange={e => setPending(v => ({ ...v, reason: e.target.value }))} aria-label="사유" />
             )}
           </div>
+          {pending.type === 'handoff' && (
+            <select className="fs" style={{ marginTop: 8 }} value={pending.ref || ''} onChange={e => setPending(v => ({ ...v, ref: e.target.value }))} aria-label="연결할 외주 태스크">
+              <option value="">연결할 외주 태스크 (선택)</option>
+              {outTasks.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          )}
           <div className="pd-actions">
             <button type="button" className="btn btn-sm" onClick={() => setPending(null)}>취소</button>
             <button type="button" className="btn btn-sm btn-p" onClick={confirm}>{pending.type === 'resume' ? '재개' : PAUSE_L[pending.type]}</button>
@@ -650,6 +660,7 @@ function StatusControl({ form, setForm }) {
             <li key={i}>
               <span className={'st-tag st-' + p.type}>{PAUSE_L[p.type]}</span>
               <span className="st-d">{p.from.slice(5).replace('-', '.')} → {p.to ? p.to.slice(5).replace('-', '.') + ' 재개' : '지금까지'}</span>
+              {p.ref && (() => { const r = (tasks || []).find(x => x.id === p.ref); return r ? <span className="st-r">→ {r.name}</span> : null; })()}
               {p.reason && <span className="st-r">{p.reason}</span>}
               <button type="button" className="pd-x" onClick={() => removePause(i)} aria-label="기록 삭제"><Icon name="x" size={13} /></button>
             </li>

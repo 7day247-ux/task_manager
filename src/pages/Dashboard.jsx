@@ -39,7 +39,7 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePa
   const dateStr = (now.getMonth() + 1) + '월 ' + now.getDate() + '일 ' + days[now.getDay()] + '요일';
 
   const inprog  = tasks.filter(t => t.status === 'inprogress');
-  const active  = tasks.filter(t => t.status !== 'done' && t.status !== 'drop');
+  const active  = tasks.filter(t => t.status !== 'done' && t.status !== 'drop' && t.status !== 'handoff');
   const hold    = tasks.filter(t => t.status === 'hold');
   const asapAll = tasks.filter(t => t.asap);
   const asapDone = tasks.filter(t => t.asap && t.status === 'done');
@@ -49,10 +49,10 @@ export default function Dashboard({ tasks, onGoTaskFilter, onSignOut, onChangePa
   const p3 = asapAll.length ? Math.round(asapDone.length / asapAll.length * 100) : 0;
 
   const todayStr = today();
-  const todayT = tasks.filter(t => (t.dueDate === todayStr || t.asap) && t.status !== 'done' && t.status !== 'drop');
+  const todayT = tasks.filter(t => (t.dueDate === todayStr || t.asap) && t.status !== 'done' && t.status !== 'drop' && t.status !== 'handoff');
   const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + (6 - now.getDay()));
   const weekT = tasks.filter(t => {
-    if (!t.dueDate || t.status === 'done' || t.status === 'drop') return false;
+    if (!t.dueDate || t.status === 'done' || t.status === 'drop' || t.status === 'handoff') return false;
     return t.dueDate >= todayStr && t.dueDate <= ymd(weekEnd);
   }).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 

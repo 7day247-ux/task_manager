@@ -52,6 +52,7 @@ export const STATUS = {
   inprogress: { l: '진행중', c: '#FF7A1A' },
   hold:       { l: '홀드',   c: '#7A7A7A' },
   drop:       { l: '드롭',   c: '#B0B0B0' },
+  handoff:    { l: '외주 이관', c: '#8F7AD6' },
   done:       { l: '완료',   c: '#111111' },
 };
 

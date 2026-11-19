@@ -110,14 +110,14 @@ export function toRow(d) {
   };
 }
 
-// 홀드·드롭 기록: [{ type: 'hold'|'drop', from: 'YYYY-MM-DD', to: '' (아직 멈춤) | 'YYYY-MM-DD'(재개일), reason }]
+// 홀드·드롭·외주 이관 기록: [{ type: 'hold'|'drop'|'handoff', ref: 외주 태스크 id, from: 'YYYY-MM-DD', to: '' (아직 멈춤) | 'YYYY-MM-DD'(재개일), reason }]
 export function cleanPauses(v) {
   let a = v;
   if (typeof a === 'string') { try { a = JSON.parse(a); } catch { a = []; } }
   if (!Array.isArray(a)) return [];
   return a
-    .filter(x => x && x.from && (x.type === 'hold' || x.type === 'drop'))
-    .map(x => ({ type: x.type, from: x.from, to: x.to || '', reason: x.reason || '' }))
+    .filter(x => x && x.from && (x.type === 'hold' || x.type === 'drop' || x.type === 'handoff'))
+    .map(x => ({ type: x.type, from: x.from, to: x.to || '', reason: x.reason || '', ref: x.ref || null }))
     .sort((x, y) => x.from.localeCompare(y.from));
 }
 
@@ -231,7 +231,7 @@ export function projectSummary(project, tasks) {
   return {
     project, list, start, end, allDone, required,
     lead: start ? projectLead(list, start, end || today()) : null,
-    paused: list.length > 0 && list.every(t => t.status === 'hold' || t.status === 'drop'),
+    paused: list.length > 0 && list.every(t => t.status === 'hold' || t.status === 'drop' || t.status === 'handoff'),
     doneCount: list.filter(t => t.status === 'done').length,
     pieces: list.reduce((s, t) => s + itemTotal(t), 0),
     proposals: list.reduce((s, t) => s + (t.proposalCount || 0), 0),
