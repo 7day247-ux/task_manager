@@ -9,6 +9,7 @@ export function useAppData() {
   const [events, setEvents]    = useState([]);
   const [projects, setProjects] = useState([]);
   const [images, setImages]     = useState([]);
+  const [imageComments, setImageComments] = useState([]);
   const [products, setProducts] = useState([]);
   const [pEvents, setPEvents]   = useState([]);
   const [orders, setOrders]     = useState([]);
@@ -26,7 +27,7 @@ export function useAppData() {
   const loadAll = useCallback(async () => {
     showToast('불러오는 중...');
     try {
-      const [td, md, mid, ld, ed, pd, imd, prd, pev, ood] = await Promise.all([
+      const [td, md, mid, ld, ed, pd, imd, prd, pev, ood, icm] = await Promise.all([
         api('tasks?order=created_at.desc'),
         api('meetings?order=meet_date.desc'),
         api('meeting_items?order=created_at.asc'),
@@ -37,6 +38,7 @@ export function useAppData() {
         api('products?order=id.asc').catch(() => []),
         api('product_events?order=event_date.asc,id.asc').catch(() => []),
         api('outsource_orders?order=id.asc').catch(() => []),
+        api('image_comments?order=created_at.asc').catch(() => []),
       ]);
       setTasks((td || []).map(mapTask));
       setMeetings((md || []).map(m => ({ ...m, attendees: m.attendees || '', meet_date: String(m.meet_date || '').trim() })));
@@ -45,6 +47,7 @@ export function useAppData() {
       setEvents(ed || []);
       setProjects(pd || []);
       setImages(imd || []);
+      setImageComments(icm || []);
       setProducts(prd || []);
       setPEvents(pev || []);
       setOrders(ood || []);
@@ -60,8 +63,12 @@ export function useAppData() {
   }, []);
 
   const reloadImages = useCallback(async () => {
-    const imd = await api('images?order=created_at.desc');
+    const [imd, icm] = await Promise.all([
+      api('images?order=created_at.desc'),
+      api('image_comments?order=created_at.asc').catch(() => []),
+    ]);
     setImages(imd || []);
+    setImageComments(icm || []);
   }, []);
 
   const reloadEvents = useCallback(async () => {
@@ -90,6 +97,7 @@ export function useAppData() {
     events,
     projects,
     images,
+    imageComments,
     products,
     pEvents,
     orders,

@@ -11,7 +11,7 @@ const INIT_TASK = {
   items: [], proposalCount: 0, finalType: '', projectId: null, pauses: [],
 };
 
-export default function TaskModal({ task, tasks, projects = [], images = [], products = [], orders = [], onOpenDoc, onReloadImages, defaultCat, onClose, onSaved, showToast }) {
+export default function TaskModal({ task, tasks, projects = [], images = [], imageComments = [], products = [], orders = [], onOpenDoc, onReloadImages, defaultCat, onClose, onSaved, showToast }) {
   const isEdit = !!task;
   const [form, setForm]     = useState(() => (!task && defaultCat ? { ...INIT_TASK, cat: defaultCat } : INIT_TASK));
   const [csteps, setCsteps] = useState([]);
@@ -450,7 +450,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], pro
                     return list.length > 0 && (
                       <div key={k} className="ti-grp">
                         <div className="ti-lbl">{k === 'final' ? '최종 디자인' : '무드보드'} {list.length}장</div>
-                        <ImageGrid small images={list} onChanged={onReloadImages} showToast={showToast} />
+                        <ImageGrid small images={list} comments={imageComments} projects={projects} onChanged={onReloadImages} showToast={showToast} />
                       </div>
                     );
                   })}

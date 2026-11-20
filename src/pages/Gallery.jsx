@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
-import ImageGrid, { UploadButton, KIND } from '../components/ImageGrid';
+import ImageGrid, { UploadButton, ProjectOptions, ROUNDS, todayStr } from '../components/ImageGrid';
 import { STORAGE_LIMIT, fmtBytes } from '../utils/storage';
 
 const KINDS = [{ id: 'all', label: '전체' }, { id: 'final', label: '최종 디자인' }, { id: 'mood', label: '무드보드' }];
 
-export default function Gallery({ images, projects, tasks, onReload, showToast }) {
+export default function Gallery({ images, comments, projects, tasks, onReload, showToast }) {
   const [kind, setKind] = useState('final');
   const [pid, setPid]   = useState('');
   const [upKind, setUpKind] = useState('final');
   const [upPid, setUpPid]   = useState('');
+  const [upRound, setUpRound] = useState('');
+  const [upDate, setUpDate]   = useState(todayStr());
+  const [round, setRound]     = useState('');
 
   const pname = {}; projects.forEach(p => { pname[p.id] = p.name; });
   const tname = {}; tasks.forEach(t => { tname[t.id] = t.name; });
   const caption = img => pname[img.project_id] || tname[img.task_id] || '';
 
-  const shown = images.filter(i => (kind === 'all' || i.kind === kind) && (!pid || String(i.project_id) === pid));
+  const shown = images
+    .filter(i => (kind === 'all' || i.kind === kind) && (!pid || String(i.project_id) === pid) && (!round || i.round === round))
+    .sort((a, b) => String(b.ref_date).localeCompare(String(a.ref_date)) || String(b.created_at).localeCompare(String(a.created_at)));
+  const usedRounds = ROUNDS.filter(r => images.some(i => i.round === r));
   const used  = images.reduce((s, i) => s + (i.bytes || 0), 0);
   const cnt   = k => images.filter(i => i.kind === k).length;
   const usedProjects = projects.filter(p => images.some(i => i.project_id === p.id));
@@ -36,11 +42,15 @@ export default function Gallery({ images, projects, tasks, onReload, showToast }
             <option value="mood">무드보드</option>
           </select>
           <select className="fs" value={upPid} onChange={e => setUpPid(e.target.value)}>
-            <option value="">제품 연결 안함</option>
-            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            <ProjectOptions projects={projects} empty="제품 연결 안함" />
           </select>
+          <select className="fs" value={upRound} onChange={e => setUpRound(e.target.value)}>
+            <option value="">차수 없음</option>
+            {ROUNDS.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <input type="date" className="fs" value={upDate} onChange={e => setUpDate(e.target.value)} />
           <UploadButton className="btn btn-p" label="+ 사진 고르기" kind={upKind}
-            projectId={upPid ? parseInt(upPid) : null} onDone={onReload} showToast={showToast} />
+            projectId={upPid ? parseInt(upPid) : null} round={upRound} refDate={upDate || null} onDone={onReload} showToast={showToast} />
         </div>
         <div className="fhint">여러 장을 한 번에 고를 수 있어요. 올릴 때 자동으로 줄여서 저장하고, 원본은 올라가지 않아요. JPG·PNG만 되고 AI·PSD·PDF는 안 돼요.</div>
       </div>
@@ -54,10 +64,17 @@ export default function Gallery({ images, projects, tasks, onReload, showToast }
             {usedProjects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
+        {usedRounds.length > 0 && (
+          <select className="fs" value={round} onChange={e => setRound(e.target.value)}
+            style={{ width: 'auto', padding: '5px 10px', fontSize: 12, borderRadius: 20 }}>
+            <option value="">모든 차수</option>
+            {usedRounds.map(r => <option key={r} value={r}>{r}</option>)}
+          </select>
+        )}
       </div>
 
       {shown.length
-        ? <ImageGrid images={shown} caption={caption} onChanged={onReload} showToast={showToast} />
+        ? <ImageGrid images={shown} caption={caption} comments={comments} projects={projects} onChanged={onReload} showToast={showToast} />
         : <div className="empty-r" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#8A8A8A', fontSize: 13 }}>
             {images.length ? '조건에 맞는 이미지가 없어요.' : '아직 올린 이미지가 없어요. 위에서 사진을 골라 올려보세요.'}
           </div>}

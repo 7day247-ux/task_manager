@@ -50,7 +50,7 @@ function AppInner() {
   const [pwModalOpen, setPwModalOpen] = useState(false);
 
   const {
-    tasks, meetings, mtItems, leaves, events, projects, images, products, pEvents, orders, reloadImages,
+    tasks, meetings, mtItems, leaves, events, projects, images, imageComments, products, pEvents, orders, reloadImages,
     toast, showToast, hideToast,
     loadAll, reloadLeaves, reloadMeetings, reloadEvents,
   } = useAppData();
@@ -129,7 +129,7 @@ function AppInner() {
             <CompletedWork tasks={tasks} events={events} projects={projects} onOpenTask={openTask} />
           } />
           <Route path="/gallery" element={
-            <Gallery images={images} projects={projects} tasks={tasks} onReload={reloadImages} showToast={showToast} />
+            <Gallery images={images} comments={imageComments} projects={projects} tasks={tasks} onReload={reloadImages} showToast={showToast} />
           } />
           <Route path="/commute" element={
             <Commute showToast={showToast} />
@@ -150,6 +150,7 @@ function AppInner() {
           tasks={tasks}
           projects={projects}
           images={images}
+          imageComments={imageComments}
           products={products}
           orders={orders}
           onOpenDoc={id => navigate('/outsource/' + id)}

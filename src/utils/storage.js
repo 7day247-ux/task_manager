@@ -52,7 +52,7 @@ async function put(path, blob) {
 }
 
 // 원본은 올리지 않는다. 크게 볼 이미지(1600px)와 미리보기(480px)만 저장한다.
-export async function uploadImage(file, { kind, taskId = null, projectId = null }) {
+export async function uploadImage(file, { kind, taskId = null, projectId = null, round = '', refDate = null }) {
   if (!file.type.startsWith('image/')) throw new Error('이미지 파일만 올릴 수 있어요: ' + file.name);
   const img = await loadImage(file);
   const full  = await resize(img, 1600, 0.82);
@@ -65,6 +65,7 @@ export async function uploadImage(file, { kind, taskId = null, projectId = null 
   try {
     await api('images', { method: 'POST', body: JSON.stringify({
       kind, task_id: taskId, project_id: projectId, path, thumb_path: thumbPath,
+      round: round || '', ...(refDate ? { ref_date: refDate } : {}),
       width: full.w, height: full.h, bytes: full.blob.size + thumb.blob.size,
       title: file.name.replace(/\.[^.]+$/, '').slice(0, 80),
     }) });
@@ -84,6 +85,22 @@ async function removeObjects(paths) {
 export async function deleteImage(img) {
   await removeObjects([img.path, img.thumb_path]);
   await api('images?id=eq.' + img.id, { method: 'DELETE' });
+}
+
+// 이미지 정보(차수·날짜·연결 제품) 수정
+export async function updateImage(id, patch) {
+  await api('images?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(patch) });
+}
+
+// 코멘트: kind = 'memo'(메모) | 'fix'(수정 요청, 체크해서 완료 처리)
+export async function addComment(imageId, kind, body) {
+  await api('image_comments', { method: 'POST', body: JSON.stringify({ image_id: imageId, kind, body }) });
+}
+export async function setCommentDone(id, done) {
+  await api('image_comments?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ done }) });
+}
+export async function deleteComment(id) {
+  await api('image_comments?id=eq.' + id, { method: 'DELETE' });
 }
 
 // 비공개 저장소라 1시간짜리 임시 주소를 받아서 보여준다. 받은 주소는 50분 동안 다시 쓴다.
