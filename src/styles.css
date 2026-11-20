@@ -994,3 +994,14 @@ input.fi[type=date]{-webkit-appearance:none;appearance:none;min-width:0;max-widt
 .lb-seg{display:flex;background:#E3E3E3;border-radius:999px;padding:2px;gap:2px;}
 .lb-seg button{border:0;background:transparent;font:500 12px 'Inter Tight','Noto Sans KR',sans-serif;color:#8A8A8A;padding:6px 10px;border-radius:999px;cursor:pointer;}
 .lb-seg button.on{background:#fff;color:#111;}
+
+/* ─── 리드타임 ─── */
+.lt-calc{display:flex;align-items:center;gap:10px;font-size:13px;color:#111;}
+.lt-calc .fi{flex:1;}
+.lt-hint{font-size:11px;color:#8A8A8A;margin:6px 0 14px;}
+.lt-g{border-top:1px solid #EEE;padding:10px 0;}
+.lt-cat{font-size:13px;font-weight:600;color:#111;margin-bottom:4px;}
+.lt-row{display:flex;align-items:center;gap:8px;padding:4px 0 4px 10px;font-size:13px;}
+.lt-name{flex:1;color:#333;}
+.lt-wk{width:56px;text-align:right;font-weight:600;color:#FF7A1A;font-variant-numeric:tabular-nums;}
+.lt-due{width:72px;text-align:right;color:#8A8A8A;font-size:12px;font-variant-numeric:tabular-nums;}

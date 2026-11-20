@@ -3,6 +3,7 @@ import Icon from '../components/Icon';
 import { CAT } from '../utils/constants';
 import { isCustomCat, getSteps, pct, openPause, pausedWorkdays, elapsedDays } from '../utils/helpers';
 import TaskTable from '../components/TaskTable';
+import LeadTimeModal from '../components/LeadTimeModal';
 
 const VIEWS = [
   { id: 'cat', label: '카테고리별' },
@@ -17,6 +18,7 @@ const VIEWS = [
 const md = d => (d ? d.slice(5).replace('-', '.') : '');
 
 export default function Tasks({ tasks, onOpenTask, filterStatus }) {
+  const [ltOpen, setLtOpen] = useState(false);
   const [tv, setTv] = useState(filterStatus === 'hold' ? 'hold' : filterStatus ? 'all' : 'cat');
 
   const active = filterStatus === 'asap'
@@ -109,10 +111,14 @@ export default function Tasks({ tasks, onOpenTask, filterStatus }) {
           <div className="pt">태스크</div>
           <div className="ps">전체 업무 현황</div>
         </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+        <button className="btn" onClick={() => setLtOpen(true)}>리드타임</button>
         <button className="btn btn-p" onClick={() => onOpenTask(null, 'pkg')}>
           <span>+</span><span className="hide-mobile"> 새 태스크</span>
         </button>
+        </div>
       </div>
+      {ltOpen && <LeadTimeModal onClose={() => setLtOpen(false)} />}
 
       <div className="tb">
         {VIEWS.map(v => (
