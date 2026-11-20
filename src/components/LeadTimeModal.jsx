@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon';
+import { isWorkday } from '../utils/helpers';
 
 // 부자재 리드타임: 최종 디자인 데이터 이관 → 공장 입고까지 (주 단위, 손메모 기준)
 // max가 없으면 단일 기간, weeks가 null이면 기간 미정
@@ -10,14 +11,21 @@ export const LEAD_TIMES = [
   { cat: '바',   items: [{ name: '필름', min: 2 }] },
   { cat: '콘',   items: [{ name: '리드지', min: 5 }, { name: '바디', min: 4 }] },
   { cat: '샌드', items: [{ name: '필름', min: 2, max: 3 }] },
+  { cat: '모나카', items: [{ name: '필름', min: 2, max: 3 }] },
   { cat: '튜브', items: [{ name: '필름', min: 2, max: 3 }] },
 ];
 
 const pad = n => String(n).padStart(2, '0');
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-function addWeeks(d, w) {
+// 이관일 다음 날부터 근무일(주말·공휴일 제외) n일째 되는 날. 주 단위 기간은 ×5 근무일.
+function addWorkdays(d, n) {
   const [y, m, dd] = d.split('-').map(Number);
-  const t = new Date(y, m - 1, dd + w * 7);
+  const t = new Date(y, m - 1, dd);
+  let left = n;
+  while (left > 0) {
+    t.setDate(t.getDate() + 1);
+    if (isWorkday(t)) left--;
+  }
   return (t.getMonth() + 1) + '/' + t.getDate() + '(' + DOW[t.getDay()] + ')';
 }
 function today() {
@@ -44,7 +52,7 @@ export default function LeadTimeModal({ onClose }) {
             <span>데이터 이관일</span>
             <input className="fi" type="date" value={date} onChange={e => setDate(e.target.value)} />
           </label>
-          <div className="lt-hint">이관일을 넣으면 입고 예상일이 계산돼요 (주말 포함 달력 기준, 범위는 늦은 쪽).</div>
+          <div className="lt-hint">이관일을 넣으면 입고 예상일이 계산돼요 (주말·공휴일 제외 근무일 기준, 범위는 늦은 쪽).</div>
           {LEAD_TIMES.map(g => (
             <div key={g.cat} className="lt-g">
               <div className="lt-cat">{g.cat}</div>
@@ -52,7 +60,7 @@ export default function LeadTimeModal({ onClose }) {
                 <div key={it.name} className="lt-row">
                   <span className="lt-name">{it.name}</span>
                   <span className="lt-wk">{it.min == null ? '—' : it.max ? it.min + '~' + it.max + '주' : it.min + '주'}</span>
-                  <span className="lt-due">{it.min == null || !date ? '' : addWeeks(date, it.max || it.min)}</span>
+                  <span className="lt-due">{it.min == null || !date ? '' : addWorkdays(date, (it.max || it.min) * 5)}</span>
                 </div>
               ))}
             </div>
