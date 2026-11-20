@@ -450,7 +450,7 @@ export default function TaskModal({ task, tasks, projects = [], images = [], ima
                     return list.length > 0 && (
                       <div key={k} className="ti-grp">
                         <div className="ti-lbl">{k === 'final' ? '최종 디자인' : '무드보드'} {list.length}장</div>
-                        <ImageGrid small images={list} comments={imageComments} projects={projects} onChanged={onReloadImages} showToast={showToast} />
+                        <ImageGrid small images={list} comments={imageComments} projects={projects} tasks={tasks} onChanged={onReloadImages} showToast={showToast} />
                       </div>
                     );
                   })}

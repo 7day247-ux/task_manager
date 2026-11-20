@@ -74,7 +74,7 @@ export default function Gallery({ images, comments, projects, tasks, onReload, s
       </div>
 
       {shown.length
-        ? <ImageGrid images={shown} caption={caption} comments={comments} projects={projects} onChanged={onReload} showToast={showToast} />
+        ? <ImageGrid images={shown} caption={caption} comments={comments} projects={projects} tasks={tasks} onChanged={onReload} showToast={showToast} />
         : <div className="empty-r" style={{ padding: '3rem 1rem', textAlign: 'center', color: '#8A8A8A', fontSize: 13 }}>
             {images.length ? '조건에 맞는 이미지가 없어요.' : '아직 올린 이미지가 없어요. 위에서 사진을 골라 올려보세요.'}
           </div>}

@@ -36,7 +36,7 @@ export function ProjectOptions({ projects, empty }) {
 }
 
 // 미리보기 격자. 누르면 크게 보고, 좌우로 넘기고, 코멘트·차수·제품 연결을 고칠 수 있다.
-export default function ImageGrid({ images, caption, comments, projects = [], onChanged, showToast, small }) {
+export default function ImageGrid({ images, caption, comments, projects = [], tasks = [], onChanged, showToast, small }) {
   const [urls, setUrls] = useState({});
   const [openId, setOpenId] = useState(null);
   const key = images.map(i => i.id).join(',');
@@ -67,14 +67,14 @@ export default function ImageGrid({ images, caption, comments, projects = [], on
       </div>
       {openId !== null && (
         <Lightbox images={images} openId={openId} setOpenId={setOpenId} thumbs={urls} caption={caption}
-          comments={comments} projects={projects} onChanged={onChanged} showToast={showToast}
+          comments={comments} projects={projects} tasks={tasks} onChanged={onChanged} showToast={showToast}
           onClose={() => setOpenId(null)} />
       )}
     </>
   );
 }
 
-function Lightbox({ images, openId, setOpenId, thumbs, caption, comments, projects, onChanged, showToast, onClose }) {
+function Lightbox({ images, openId, setOpenId, thumbs, caption, comments, projects, tasks, onChanged, showToast, onClose }) {
   const idx = images.findIndex(i => i.id === openId);
   const img = images[idx];
   const [urls, setUrls] = useState({});
@@ -172,6 +172,17 @@ function Lightbox({ images, openId, setOpenId, thumbs, caption, comments, projec
     catch (err) { showToast && showToast(err.message, true); }
   }
 
+  // 태스크 목록: 연결된 제품이 있으면 그 제품의 태스크만, 진행 중인 것 먼저.
+  const tList = tasks
+    .filter(t => !img.project_id || t.projectId === img.project_id || t.id === img.task_id)
+    .sort((a, b) => (a.status === 'done') - (b.status === 'done'));
+  function pickTask(v) {
+    const t = tasks.find(x => String(x.id) === v);
+    const p = { task_id: t ? t.id : null };
+    if (t && t.projectId && !img.project_id) p.project_id = t.projectId;
+    patch(p);
+  }
+
   const list = withPanel ? comments.filter(c => c.image_id === img.id) : [];
   const fixLeft = list.filter(c => c.kind === 'fix' && !c.done).length;
   const big = urls[img.path];
@@ -209,6 +220,12 @@ function Lightbox({ images, openId, setOpenId, thumbs, caption, comments, projec
             <select className="fs lb-sel lb-sel-w" value={img.project_id || ''} onChange={e => patch({ project_id: e.target.value ? parseInt(e.target.value) : null })}>
               <ProjectOptions projects={projects} empty="제품 연결 안함" />
             </select>
+            {tasks.length > 0 && (
+              <select className="fs lb-sel lb-sel-w" value={img.task_id || ''} onChange={e => pickTask(e.target.value)}>
+                <option value="">태스크 연결 안함</option>
+                {tList.map(t => <option key={t.id} value={t.id}>{t.status === 'done' ? '(완료) ' : ''}{t.name}</option>)}
+              </select>
+            )}
             <button type="button" className="lb-del2" onClick={remove}>삭제</button>
           </div>
 
